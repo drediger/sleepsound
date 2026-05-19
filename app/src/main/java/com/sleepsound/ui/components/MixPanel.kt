@@ -19,8 +19,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.VolumeOff
-import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -129,7 +129,7 @@ private fun MixRow(
             val muteCd = stringResource(R.string.cd_mute_format, id.displayName)
             val unmuteCd = stringResource(R.string.cd_unmute_format, id.displayName)
             Icon(
-                imageVector = if (isMuted) Icons.Default.VolumeOff else Icons.Default.VolumeUp,
+                imageVector = if (isMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
                 contentDescription = if (isMuted) unmuteCd else muteCd,
                 tint = if (isMuted) DimmerGrey else IconGrey,
                 modifier = Modifier.size(18.dp),
