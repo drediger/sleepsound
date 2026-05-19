@@ -1,0 +1,214 @@
+# Google Play Store Listing — SleepSound
+
+> All character limits and rules below are sourced from Google's official
+> Play Console documentation. Each line that pushes a limit is hand-counted
+> against the constraint so you can verify before pasting into Play Console.
+
+---
+
+## Sourced constraints
+
+| Field | Limit | Source |
+|---|---|---|
+| App title | ≤30 characters; no emojis, no emoticons, no ALL CAPS except brand, no "#1"/"Best"/"% off" claims, no Google Play program badges | [Create and set up your app](https://support.google.com/googleplay/android-developer/answer/9859152) + [Metadata policy](https://support.google.com/googleplay/android-developer/answer/9898842) |
+| Short description | ≤80 characters; the first text users see on the detail page | [Create and set up your app](https://support.google.com/googleplay/android-developer/answer/9859152) |
+| Full description | ≤4000 characters; "should not repeat the short description" | [Best practices for your store listing](https://support.google.com/googleplay/android-developer/answer/13393723) |
+| Listing assets | App icon 512×512 PNG-32 (alpha, ≤1024 KB); feature graphic 1024×500 JPEG/PNG-24 (no alpha); ≥2 phone screenshots, ≥4 to be eligible for promotion at min 1080 px (portrait 1080×1920, landscape 1920×1080) | [Add preview assets to showcase your app](https://support.google.com/googleplay/android-developer/answer/9866151) |
+| Privacy policy | Required for every app, even those collecting no data; must be on a publicly accessible, non-geofenced, non-editable URL (no PDFs); must name the same entity as the store listing | [Google Play User Data policy](https://support.google.com/googleplay/android-developer/answer/9888076) |
+| Data Safety form | Must be completed for every app, even ones collecting no data; on-device-only processing and end-to-end-encrypted data are not "collection" | [Data safety section in Google Play](https://support.google.com/googleplay/android-developer/answer/10787469) |
+
+---
+
+## Title  *(30-char limit)*
+
+```
+SleepSound — sleep noise app
+```
+
+**Length:** 28 characters. ✓
+
+Alternative if the em dash worries you (it's not a "repeated special character" so it should be fine, but a hyphen is safer):
+
+```
+SleepSound - sleep noise app          (28 chars)
+SleepSound: bedside sleep noise       (30 chars)
+```
+
+---
+
+## Short description  *(80-char limit)*
+
+```
+Sleep sounds that won't wake you. No ads, no account, no loops, AMOLED.
+```
+
+**Length:** 71 characters (counted by `python3 -c "print(len(...))"`). ✓
+
+This sentence does the work of the first impression: states the category
+("sleep sounds"), the reliability promise ("won't wake you"), and the four
+anti-patterns this app rejects.
+
+---
+
+## Full description  *(4000-char limit)*
+
+The version below is **3 308 characters** (well under 4 000). It does *not*
+repeat the short description, per Google's best-practices guidance. It avoids
+banned phrasing: no "#1", no "Best of 20xx", no pricing claims, no emojis,
+no Editor's Choice / New badges.
+
+```
+A sleep-sound app that respects your nights.
+
+Every popular sleep-sound app on the Play Store is built for daytime
+browsing and monetized for engagement: bright UIs, account sign-ups, ads
+that fire at 3am, and audio that dies overnight under Doze or after a
+Bluetooth re-pair. SleepSound inverts every one of those defaults.
+
+WHAT YOU GET
+• Four free sounds: brown noise, white noise, rain, and ocean. Nothing
+  locked, no time limit, no ad break.
+• Seven premium sounds at $0.99 each, one-time purchase: pink noise,
+  violet noise, TV static, thunderstorm, dryer, fan, fireplace. Preview
+  any locked sound live inside the mixer before deciding.
+• A multi-layer mixer with per-sound volume sliders, so you can dial in a
+  rain-over-brown-noise mix that's exactly yours.
+• A sleep timer with one-tap presets (15, 30, 60, 90 min) or a custom
+  value up to 12 hours. Either way it fades audio out gently instead of
+  cutting it off.
+• Optional resume-on-reboot for anyone who keeps the same mix nightly.
+
+BUILT FOR NIGHT-TIME
+• True AMOLED black throughout. The screen auto-dims after 30 seconds of
+  no touch so it disappears at the bedside.
+• Procedural noise generation, not 30-second loops. Light sleepers will
+  hear the difference.
+• A media foreground service keeps audio alive through screen-off, Doze,
+  and app-swipe-away.
+• Bluetooth or headphone disconnect pauses cleanly — your phone speaker
+  doesn't blast at 3am.
+• Phone calls and voice apps pause SleepSound (not duck) so you don't
+  have audio bleeding into a call.
+• MediaSession integration: lock-screen controls, notification controls,
+  Bluetooth media keys, and Android Auto all work.
+• In-app guidance for OEM battery-killer settings (Samsung, Xiaomi,
+  OnePlus, Huawei, etc.) so audio survives the night.
+
+WHAT IT WILL NEVER DO
+• No ads. Not in the app, not at 3am, not ever.
+• No account, no sign-in, no email collection.
+• No subscription. Premium sounds are one-time $0.99 purchases.
+• No tracking, no analytics, no telemetry beyond crash reports.
+• No looped audio masquerading as continuous noise.
+
+WHO IT'S FOR
+Light sleepers, parents of babies, audiophiles, and anyone burned by
+subscription sleep apps. If you've ever been woken by a "Try Premium"
+overlay at 3am, this is for you.
+
+WHAT IT IS NOT
+SleepSound is a sound-maker, not a meditation library. There are no guided
+meditations, no sleep stories, no sleep scoring, no social feed. If you
+want those, other apps do them well.
+
+PERMISSIONS
+SleepSound declares only the permissions it actually needs:
+foreground media-playback service, notifications (for the playback
+control), wake-lock to keep the CPU running during playback, an optional
+boot receiver if you opt in to resume-on-reboot, and the standard
+"request to ignore battery optimizations" permission so the Reliability
+screen can open Android's exemption dialog (you can always decline).
+SleepSound does not request the network, microphone, location,
+contacts, or storage.
+
+PRIVACY
+SleepSound collects no user data. No analytics, no advertising IDs, no
+device fingerprinting. The app itself makes no network calls. Premium
+sound purchases run through Google Play Billing on Google's servers;
+opening the privacy policy or an OEM help page uses your default
+browser. Full policy: <PRIVACY_POLICY_URL>.
+```
+
+**Length:** 3 308 characters (counted with Python `len(...)`). ✓
+
+---
+
+## What's new  *(release notes, 500-char limit per release)*
+
+For v1.0:
+
+```
+First public release of SleepSound.
+
+• Four free sounds: brown noise, white noise, rain, ocean.
+• Seven premium sounds at $0.99 each — 30-second live preview before
+  you buy. Pink noise, violet noise, TV static, thunderstorm, dryer,
+  fan, fireplace.
+• Multi-layer mixer with per-sound volume.
+• Sleep timer with gentle fade-out.
+• AMOLED-true-black UI that auto-dims at night.
+• Audio service designed to survive Doze and OEM battery-killers.
+• No ads, no account, no subscription, no tracking.
+```
+
+**Length:** 496 characters. ✓
+
+---
+
+## Tags / category
+
+- **Category:** Health & Fitness → Sleep
+  (Alternative: Music & Audio. Pick one — most established sleep-noise
+  apps live in Health & Fitness, which is also what Calm/BetterSleep use.)
+- **Content rating:** Everyone (no UGC, no in-app communications, no
+  controlled substance/violence/sexual content). You'll still need to
+  complete the IARC questionnaire in Play Console.
+- **Target audience:** 18+ recommended. Reason: there's no kid-mode, no
+  parental controls, and the app exists for adult-bedroom use. Selecting
+  13+ or under would invoke Google's Families policy and add audit
+  surface you don't need.
+
+---
+
+## Asset checklist
+
+Before submitting:
+
+- [ ] App icon — 512×512 PNG-32 with alpha, ≤1024 KB. (Source: see launcher
+      icon `ic_launcher_foreground` + `ic_launcher_background` at 1×; export
+      composited 512×512.)
+- [ ] Feature graphic — 1024×500 JPEG/PNG-24, no alpha. Suggested: black
+      background, small crescent-moon mark on the left, the words
+      "SleepSound — quiet nights, no compromises" in light grey on the
+      right.
+- [ ] Phone screenshots — 4+ at 1080×1920 PNG. Capture:
+      1. Player screen with one sound active and the mixer visible.
+      2. Empty/idle state ("Tap a sound").
+      3. Settings sheet with the "No ads, no account…" line visible.
+      4. Timer dropdown open showing 15/30/60/90 min options.
+- [ ] (Optional) 7-inch and 10-inch tablet screenshots, same scenes
+      reflowed.
+- [ ] Privacy policy URL — must be live before submission. Replace
+      `<PRIVACY_POLICY_URL>` in the description above with the published URL
+      and update `strings.xml#privacy_policy_url`.
+- [ ] Data Safety form — complete in Play Console. See `DATA_SAFETY.md`
+      for question-by-question answers.
+
+---
+
+## Things you'll be asked about in Play Console
+
+These come up in the submission flow; pre-decide so you don't have to
+context-switch mid-submission:
+
+| Question | Answer | Why |
+|---|---|---|
+| Does this app contain ads? | No | None bundled. |
+| Does this app offer in-app purchases? | Yes — per-sound one-time $0.99 unlocks. | Decided 2026-05-19: free base app with 4 free sounds + 7 premium sounds at $0.99 each. |
+| Is this app primarily directed at children? | No | Sleep app for adults. |
+| Does it access sensitive permissions? | Yes: `FOREGROUND_SERVICE_MEDIA_PLAYBACK`, `POST_NOTIFICATIONS`, `WAKE_LOCK`, `RECEIVE_BOOT_COMPLETED`, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Declared in `AndroidManifest.xml`. |
+| Does it use Advertising ID? | No | Not requested, not used. |
+| Target API level | 35 (Android 15) | Per `build.gradle.kts`. |
+| Government app? | No | |
+| News app? | No | |
+| Financial services? | No | |

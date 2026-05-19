@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">SleepSound</string>
+
+    <string name="notification_channel_name">Sleep audio</string>
+    <string name="notification_channel_desc">Ongoing playback controls</string>
+    <string name="notification_idle">Idle</string>
+    <string name="notification_playing_one">Playing 1 sound</string>
+    <string name="notification_playing_n">Playing %1$d sounds</string>
+    <string name="notification_stop">Stop</string>
+
+    <string name="tap_a_sound">Tap a sound</string>
+    <string name="tap_to_resume">Tap a sound to resume</string>
+
+    <!-- About / store-facing copy. Update privacy_policy_url before launch. -->
+    <string name="about_title">About</string>
+    <string name="about_promise">No ads. No account. No subscription. No loops. No tracking.</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_privacy">Privacy policy</string>
+    <string name="about_oss">Open-source licenses</string>
+    <string name="privacy_policy_url">https://example.com/sleepsound/privacy</string>
+</resources>

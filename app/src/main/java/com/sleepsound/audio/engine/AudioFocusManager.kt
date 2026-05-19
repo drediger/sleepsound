@@ -1,0 +1,48 @@
+package com.sleepsound.audio.engine
+
+import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
+
+interface AudioFocusCallbacks {
+    fun onFocusLostPermanent()
+    fun onFocusLostTransient()
+    fun onFocusLostCanDuck()
+    fun onFocusGain()
+}
+
+class AudioFocusManager(
+    context: Context,
+    private val callbacks: AudioFocusCallbacks,
+) {
+    private val audioManager = context.applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+    private val attributes = AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_MEDIA)
+        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+        .build()
+
+    private val listener = AudioManager.OnAudioFocusChangeListener { change ->
+        when (change) {
+            AudioManager.AUDIOFOCUS_LOSS -> callbacks.onFocusLostPermanent()
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> callbacks.onFocusLostTransient()
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> callbacks.onFocusLostCanDuck()
+            AudioManager.AUDIOFOCUS_GAIN -> callbacks.onFocusGain()
+        }
+    }
+
+    private val request: AudioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+        .setAudioAttributes(attributes)
+        .setOnAudioFocusChangeListener(listener)
+        .setAcceptsDelayedFocusGain(false)
+        .setWillPauseWhenDucked(false)
+        .build()
+
+    fun acquire(): Boolean =
+        audioManager.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+
+    fun release() {
+        audioManager.abandonAudioFocusRequest(request)
+    }
+}

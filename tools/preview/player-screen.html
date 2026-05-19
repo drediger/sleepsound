@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SleepSound preview — Player (IAP states)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!--
+  Visual proxy for the Compose Player screen. Mirrors the AMOLED theme:
+    #000 PureBlack | #111 SurfaceDark | #333 DimmerGrey | #666 DimGrey | #888 IconGrey
+  Pixel 7 logical viewport: 412 x 915 dp. Demonstrates the IAP tile states:
+    - Free tile (Brown noise) — no badge
+    - Locked premium tile (Pink) — small lock corner badge
+    - Active premium-in-preview tile (Pink) — countdown badge
+    - Active free tile (Rain) — border + raised surface
+    - Buy-prompt tile (Violet) — "$0.99 →" pill replacing the label
+-->
+<link
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0&family=Inter:wght@300;400;500&display=swap"
+  rel="stylesheet">
+<style>
+  :root {
+    --pure-black: #000000;
+    --surface-dark: #111111;
+    --dimmer-grey: #333333;
+    --dim-grey: #666666;
+    --icon-grey: #888888;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--pure-black); color:var(--dim-grey);
+    font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  .device { width:412px; height:915px; background:var(--pure-black); position:relative;
+    display:flex; flex-direction:column; overflow:hidden; }
+  .header { position:relative; width:100%; padding:8px; height:64px; display:flex;
+    align-items:center; justify-content:center; }
+  .status { color:var(--dimmer-grey); font-size:15px; font-weight:300; text-align:center; }
+  .settings-btn { position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    padding:12px; color:var(--dimmer-grey); }
+  .material-symbols-outlined { font-family:'Material Symbols Outlined'; font-weight:400;
+    font-size:24px; display:inline-block; line-height:1; -webkit-font-smoothing:antialiased;
+    font-feature-settings:'liga'; }
+  .grid { flex:1; padding:8px 16px; display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
+    align-content:start; }
+  .tile { aspect-ratio:1/1; border-radius:12px; background:var(--pure-black);
+    border:1px solid transparent; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; padding:8px; gap:6px; position:relative; }
+  .tile.active { background:var(--surface-dark); border-color:var(--icon-grey); }
+  .tile.buy-prompt { background:var(--surface-dark); border-color:var(--icon-grey); }
+  .tile-icon { font-size:28px; color:var(--dimmer-grey); }
+  .tile.active .tile-icon, .tile.buy-prompt .tile-icon { color:var(--icon-grey); }
+  .tile-label { font-size:11px; color:var(--dimmer-grey); text-align:center; line-height:1.15; }
+  .tile.active .tile-label { color:var(--dim-grey); }
+  /* badges */
+  .lock-badge { position:absolute; top:6px; right:6px; font-size:12px !important;
+    color:var(--dimmer-grey); }
+  .countdown-badge { position:absolute; top:6px; right:6px; background:var(--pure-black);
+    border-radius:6px; padding:1px 4px; color:var(--dim-grey); font-size:9px; font-weight:500; }
+  .buy-pill { background:var(--pure-black); border-radius:999px; padding:3px 8px;
+    color:var(--icon-grey); font-size:11px; font-weight:500; }
+  /* mix panel */
+  .mix-panel { width:100%; padding:4px 16px; display:flex; flex-direction:column; gap:4px; }
+  .mix-row { display:flex; align-items:center; padding:2px 0; gap:4px; }
+  .mix-label { width:88px; color:var(--dim-grey); font-size:12px; }
+  .slider { flex:1; height:16px; position:relative; display:flex; align-items:center; }
+  .slider-track { height:4px; background:var(--dimmer-grey); border-radius:2px; width:100%; position:relative; }
+  .slider-fill { height:100%; background:var(--dim-grey); border-radius:2px; position:absolute; left:0; top:0; }
+  .slider-thumb { width:16px; height:16px; background:var(--icon-grey); border-radius:50%;
+    position:absolute; top:50%; transform:translate(-50%,-50%); }
+  .mute-btn { width:32px; height:32px; border-radius:50%; display:flex; align-items:center;
+    justify-content:center; color:var(--icon-grey); }
+  .mute-btn .material-symbols-outlined { font-size:18px; }
+  /* controls */
+  .controls { width:100%; padding:16px; display:flex; justify-content:space-between; align-items:center; }
+  .timer-pill { background:var(--surface-dark); border-radius:20px; padding:10px 16px;
+    display:inline-flex; align-items:center; gap:6px; color:var(--dim-grey); font-size:14px; }
+  .timer-pill .material-symbols-outlined { font-size:16px; color:var(--icon-grey); }
+  .stop-btn { width:48px; height:48px; border-radius:50%; background:var(--surface-dark);
+    display:flex; align-items:center; justify-content:center; color:var(--dim-grey); }
+  .stop-btn .material-symbols-outlined { font-size:22px; }
+</style>
+</head>
+<body>
+  <div class="device">
+    <div class="header">
+      <div class="status">Playing 2 sounds</div>
+      <div class="settings-btn"><span class="material-symbols-outlined">settings</span></div>
+    </div>
+
+    <div class="grid">
+      <!-- Free, inactive — no badge -->
+      <div class="tile">
+        <span class="material-symbols-outlined tile-icon">graphic_eq</span>
+        <div class="tile-label">Brown noise</div>
+      </div>
+      <!-- Premium, in preview (active + countdown badge) -->
+      <div class="tile active">
+        <span class="material-symbols-outlined tile-icon">blur_on</span>
+        <div class="tile-label">Pink noise</div>
+        <span class="countdown-badge">23s</span>
+      </div>
+      <!-- Free, inactive -->
+      <div class="tile">
+        <span class="material-symbols-outlined tile-icon">circle</span>
+        <div class="tile-label">White noise</div>
+      </div>
+      <!-- Premium, just-expired preview → buy prompt -->
+      <div class="tile buy-prompt">
+        <span class="material-symbols-outlined tile-icon">bolt</span>
+        <div class="buy-pill">$0.99 →</div>
+      </div>
+      <!-- Premium, locked, inactive — lock badge -->
+      <div class="tile">
+        <span class="material-symbols-outlined tile-icon">tv</span>
+        <div class="tile-label">TV static</div>
+        <span class="material-symbols-outlined lock-badge">lock</span>
+      </div>
+      <!-- Free, active -->
+      <div class="tile active">
+        <span class="material-symbols-outlined tile-icon">water_drop</span>
+        <div class="tile-label">Rain</div>
+      </div>
+      <!-- Premium, locked -->
+      <div class="tile">
+        <span class="material-symbols-outlined tile-icon">thunderstorm</span>
+        <div class="tile-label">Thunderstorm</div>
+        <span class="material-symbols-outlined lock-badge">lock</span>
+      </div>
+      <div class="tile">
+        <span class="material-symbols-outlined tile-icon">local_laundry_service</span>
+        <div class="tile-label">Dryer</div>
+        <span class="material-symbols-outlined lock-badge">lock</span>
+      </div>
+      <!-- Free, inactive -->
+      <div class="tile">
+        <span class="material-symbols-outlined tile-icon">waves</span>
+        <div class="tile-label">Ocean</div>
+      </div>
+      <div class="tile">
+        <span class="material-symbols-outlined tile-icon">air</span>
+        <div class="tile-label">Fan</div>
+        <span class="material-symbols-outlined lock-badge">lock</span>
+      </div>
+      <div class="tile">
+        <span class="material-symbols-outlined tile-icon">local_fire_department</span>
+        <div class="tile-label">Fireplace</div>
+        <span class="material-symbols-outlined lock-badge">lock</span>
+      </div>
+    </div>
+
+    <div class="mix-panel">
+      <div class="mix-row">
+        <div class="mix-label">Pink noise</div>
+        <div class="slider">
+          <div class="slider-track"><div class="slider-fill" style="width:60%"></div></div>
+          <div class="slider-thumb" style="left:60%"></div>
+        </div>
+        <div class="mute-btn"><span class="material-symbols-outlined">volume_up</span></div>
+      </div>
+      <div class="mix-row">
+        <div class="mix-label">Rain</div>
+        <div class="slider">
+          <div class="slider-track"><div class="slider-fill" style="width:70%"></div></div>
+          <div class="slider-thumb" style="left:70%"></div>
+        </div>
+        <div class="mute-btn"><span class="material-symbols-outlined">volume_up</span></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="timer-pill">
+        <span class="material-symbols-outlined">timer</span>
+        <span>29:47</span>
+      </div>
+      <div class="stop-btn"><span class="material-symbols-outlined">stop</span></div>
+    </div>
+  </div>
+</body>
+</html>
