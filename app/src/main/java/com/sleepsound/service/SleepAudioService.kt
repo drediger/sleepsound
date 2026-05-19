@@ -70,7 +70,7 @@ class SleepAudioService : LifecycleService() {
 
     private fun handleStart() {
         val activeCount = PlaybackController.activeSounds.value.size
-        Log.i(TAG, "handleStart: activeCount=$activeCount")
+        Log.d(TAG, "handleStart: activeCount=$activeCount")
         mediaSession.setPlaying(activeCount)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(
@@ -84,7 +84,7 @@ class SleepAudioService : LifecycleService() {
         foregroundActive = true
 
         val gotFocus = focusManager.acquire()
-        Log.i(TAG, "handleStart: focusAcquired=$gotFocus")
+        Log.d(TAG, "handleStart: focusAcquired=$gotFocus")
         if (!gotFocus) {
             handleStop("focusDenied")
             return
@@ -94,7 +94,7 @@ class SleepAudioService : LifecycleService() {
     }
 
     private fun handleStop(reason: String = "explicit") {
-        Log.i(TAG, "handleStop: reason=$reason")
+        Log.d(TAG, "handleStop: reason=$reason")
         pausedForFocus = false
         mediaSession.setStopped()
         sleepTimer.cancel()
@@ -160,19 +160,19 @@ class SleepAudioService : LifecycleService() {
     }
 
     private fun onBecomingNoisy() {
-        Log.i(TAG, "onBecomingNoisy received")
+        Log.d(TAG, "onBecomingNoisy received")
         PlaybackController.notifyServiceStopped()
         handleStop("becomingNoisy")
     }
 
     private val focusCallbacks = object : AudioFocusCallbacks {
         override fun onFocusLostPermanent() {
-            Log.i(TAG, "onFocusLostPermanent")
+            Log.d(TAG, "onFocusLostPermanent")
             PlaybackController.notifyServiceStopped()
             handleStop("focusLossPermanent")
         }
         override fun onFocusLostTransient() {
-            Log.i(TAG, "onFocusLostTransient")
+            Log.d(TAG, "onFocusLostTransient")
             // Phone call, voice recorder, alarm. Pause cleanly rather than
             // ducking — playing audio under another stream is intrusive at
             // 3am and at 30% volume isn't the right experience for a call.
@@ -180,11 +180,11 @@ class SleepAudioService : LifecycleService() {
             engine.stop()
         }
         override fun onFocusLostCanDuck() {
-            Log.i(TAG, "onFocusLostCanDuck")
+            Log.d(TAG, "onFocusLostCanDuck")
             engine.setDucked(true)
         }
         override fun onFocusGain() {
-            Log.i(TAG, "onFocusGain pausedForFocus=$pausedForFocus")
+            Log.d(TAG, "onFocusGain pausedForFocus=$pausedForFocus")
             engine.setDucked(false)
             if (pausedForFocus) {
                 pausedForFocus = false

@@ -75,7 +75,7 @@
     <string name="onboarding_next">Next</string>
     <string name="onboarding_done">Done</string>
     <string name="onboarding_p1_title">Sleep sound, on your terms.</string>
-    <string name="onboarding_p1_body">No ads. No account. No subscription. No loops. No tracking. Four free sounds out of the box: brown noise, white noise, rain, and ocean.</string>
+    <string name="onboarding_p1_body">No ads. No account. No subscription. No tracking. Four free sounds out of the box: brown noise, white noise, rain, and ocean.</string>
     <string name="onboarding_p2_title">Keep audio alive overnight.</string>
     <string name="onboarding_p2_body">Android may stop Sleep Soundly mid-night to save battery. The system dialog asks if you want to exempt the app — choose Allow to keep audio playing until your timer ends.</string>
     <string name="onboarding_p2_action">Open exemption dialog</string>

@@ -50,7 +50,7 @@ class AudioFocusManager(
             AudioManager.AUDIOFOCUS_REQUEST_DELAYED -> "DELAYED"
             else -> "code=$result"
         }
-        Log.i(TAG, "requestAudioFocus → $name")
+        Log.d(TAG, "requestAudioFocus → $name")
         return result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
     }
 
