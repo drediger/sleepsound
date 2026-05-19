@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -63,7 +64,6 @@ import com.sleepsound.ui.components.SettingsBottomSheet
 import com.sleepsound.ui.components.SoundTile
 import com.sleepsound.ui.components.TimerSelector
 import com.sleepsound.ui.theme.DimGrey
-import com.sleepsound.ui.theme.DimmerGrey
 import com.sleepsound.ui.theme.PureBlack
 import com.sleepsound.ui.theme.SurfaceDark
 import kotlinx.coroutines.delay
@@ -138,18 +138,19 @@ fun PlayerScreen() {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                        .padding(horizontal = 4.dp),
                 ) {
                     Text(
                         text = statusMsg,
                         color = DimGrey,
-                        fontSize = 15.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Light,
+                        letterSpacing = 0.4.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
                             .align(Alignment.Center)
-                            .padding(vertical = 12.dp),
+                            .padding(vertical = 14.dp),
                     )
                     Box(
                         modifier = Modifier
@@ -164,39 +165,58 @@ fun PlayerScreen() {
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = stringResource(R.string.cd_settings),
-                            tint = DimmerGrey,
+                            tint = DimGrey,
                             modifier = Modifier.size(20.dp),
                         )
                     }
                 }
 
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(3),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                Box(
                     modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    items(SoundId.entries) { id ->
-                        val isLocked = id.tier == SoundTier.PREMIUM && id !in unlocked
-                        val expiry = previewExpiry[id]
-                        val previewRemaining = expiry?.let { (it - now).coerceAtLeast(0L) }
-                        SoundTile(
-                            id = id,
-                            active = id in activeSounds,
-                            locked = isLocked,
-                            previewMsRemaining = previewRemaining,
-                            showBuyPrompt = pendingPurchasePrompt == id,
-                            price = prices[id],
-                            onToggle = {
-                                PlaybackController.dismissPurchasePrompt()
-                                PlaybackController.toggleSound(context, id)
-                            },
-                            onBuy = {
-                                activity?.let { BillingManager.launchPurchaseFlow(it, id) }
-                                PlaybackController.dismissPurchasePrompt()
-                            },
-                        )
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        val allIds = SoundId.entries
+                        // When the last row would have a single orphan tile,
+                        // bracket it with empty cells so it sits centered
+                        // instead of marooned in the left column.
+                        val centerLastRow = allIds.size % 3 == 1
+                        val mainCount = if (centerLastRow) allIds.size - 1 else allIds.size
+
+                        @Composable
+                        fun tile(id: SoundId) {
+                            val isLocked = id.tier == SoundTier.PREMIUM && id !in unlocked
+                            val expiry = previewExpiry[id]
+                            val previewRemaining = expiry?.let { (it - now).coerceAtLeast(0L) }
+                            SoundTile(
+                                id = id,
+                                active = id in activeSounds,
+                                locked = isLocked,
+                                previewMsRemaining = previewRemaining,
+                                showBuyPrompt = pendingPurchasePrompt == id,
+                                price = prices[id],
+                                onToggle = {
+                                    PlaybackController.dismissPurchasePrompt()
+                                    PlaybackController.toggleSound(context, id)
+                                },
+                                onBuy = {
+                                    activity?.let { BillingManager.launchPurchaseFlow(it, id) }
+                                    PlaybackController.dismissPurchasePrompt()
+                                },
+                            )
+                        }
+
+                        items(mainCount) { i -> tile(allIds[i]) }
+                        if (centerLastRow) {
+                            item { Box(Modifier.aspectRatio(1f)) }
+                            item { tile(allIds.last()) }
+                            item { Box(Modifier.aspectRatio(1f)) }
+                        }
                     }
                 }
 

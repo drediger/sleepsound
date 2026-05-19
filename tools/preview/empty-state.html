@@ -21,20 +21,21 @@
     font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
   .device { width:412px; height:915px; background:var(--pure-black); position:relative;
     display:flex; flex-direction:column; overflow:hidden; }
-  .header { position:relative; width:100%; height:64px; display:flex; align-items:center;
-    justify-content:center; padding:8px; }
-  .status { color:var(--dimmer-grey); font-size:15px; font-weight:300; }
-  .settings-btn { position:absolute; right:8px; top:50%; transform:translateY(-50%); padding:12px;
-    color:var(--dimmer-grey); }
+  .header { position:relative; width:100%; display:flex; align-items:center;
+    justify-content:center; padding:0 4px; }
+  .status { color:var(--dim-grey); font-size:14px; font-weight:300; letter-spacing:0.4px;
+    padding:14px 0; }
+  .settings-btn { position:absolute; right:4px; top:50%; transform:translateY(-50%); padding:12px;
+    color:var(--dim-grey); }
   .material-symbols-outlined { font-family:'Material Symbols Outlined'; font-weight:400; font-size:24px;
     display:inline-block; line-height:1; -webkit-font-smoothing:antialiased; font-feature-settings:'liga'; }
-  .grid { flex:1; padding:8px 16px; display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
-    align-content:start; }
+  .grid-wrap { flex:1; display:flex; align-items:center; justify-content:center; }
+  .grid { width:100%; padding:8px 16px; display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
   .tile { aspect-ratio:1/1; border-radius:12px; background:var(--pure-black);
     border:1px solid transparent; display:flex; flex-direction:column; align-items:center;
     justify-content:center; padding:8px; gap:6px; }
-  .tile-icon { font-size:28px; color:var(--dimmer-grey); }
-  .tile-label { font-size:11px; color:var(--dimmer-grey); text-align:center; line-height:1.15; }
+  .tile-icon { font-size:28px; color:var(--dim-grey); }
+  .tile-label { font-size:11px; color:var(--dim-grey); text-align:center; line-height:1.15; }
   .controls { width:100%; padding:16px; display:flex; justify-content:space-between; align-items:center; }
   .timer-pill { background:var(--surface-dark); border-radius:20px; padding:10px 16px;
     display:inline-flex; align-items:center; gap:6px; color:var(--dim-grey); font-size:14px; }
@@ -47,6 +48,7 @@
       <div class="status">Tap a sound</div>
       <div class="settings-btn"><span class="material-symbols-outlined">settings</span></div>
     </div>
+    <div class="grid-wrap">
     <div class="grid">
       <div class="tile"><span class="material-symbols-outlined tile-icon">graphic_eq</span><div class="tile-label">Brown noise</div></div>
       <div class="tile"><span class="material-symbols-outlined tile-icon">blur_on</span><div class="tile-label">Pink noise</div></div>
@@ -59,6 +61,7 @@
       <div class="tile"><span class="material-symbols-outlined tile-icon">waves</span><div class="tile-label">Ocean</div></div>
       <div class="tile"><span class="material-symbols-outlined tile-icon">air</span><div class="tile-label">Fan</div></div>
       <div class="tile"><span class="material-symbols-outlined tile-icon">local_fire_department</span><div class="tile-label">Fireplace</div></div>
+    </div>
     </div>
     <div class="controls">
       <div class="timer-pill">

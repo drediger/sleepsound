@@ -15,6 +15,7 @@
     --dimmer-grey: #333333;
     --dim-grey: #666666;
     --icon-grey: #888888;
+    --soft-white: #cccccc;
   }
   * { box-sizing: border-box; }
   html, body { margin:0; padding:0; background:var(--pure-black); color:var(--dim-grey);
@@ -28,10 +29,11 @@
   .material-symbols-outlined { font-family:'Material Symbols Outlined'; font-weight:400;
     font-size:72px; color:var(--icon-grey); line-height:1; -webkit-font-smoothing:antialiased;
     font-feature-settings:'liga'; }
-  h1 { color:var(--dim-grey); font-weight:300; font-size:22px; text-align:center;
+  h1 { color:var(--soft-white); font-weight:300; font-size:22px; text-align:center;
     margin:0; max-width:340px; line-height:1.2; }
-  p { color:var(--dimmer-grey); font-size:14px; text-align:center; margin:0;
+  p { color:var(--dim-grey); font-size:14px; text-align:center; margin:0;
     max-width:340px; line-height:1.5; }
+  .skip-text { color:var(--dim-grey); font-size:14px; padding:8px 12px; }
   .primary { background:var(--surface-dark); border:1px solid var(--icon-grey); color:var(--dim-grey);
     border-radius:24px; padding:12px 24px; font-size:14px; font-weight:500; }
   .bottom { display:flex; justify-content:space-between; align-items:center; }
@@ -43,12 +45,12 @@
 <body>
   <div class="device">
     <div class="top">
-      <div class="skip">Skip</div>
+      <div class="skip-text">Skip</div>
     </div>
     <div class="content">
       <span class="material-symbols-outlined">battery_full</span>
       <h1>Keep audio alive overnight.</h1>
-      <p>Android may stop SleepSound mid-night to save battery. The system dialog
+      <p>Android may stop Sleep Soundly mid-night to save battery. The system dialog
         asks if you want to exempt the app — choose Allow to keep audio playing
         until your timer ends.</p>
       <div class="primary">Open exemption dialog</div>
@@ -57,7 +59,6 @@
       <div class="dots">
         <div class="dot"></div>
         <div class="dot active"></div>
-        <div class="dot"></div>
       </div>
       <div class="primary">Next</div>
     </div>

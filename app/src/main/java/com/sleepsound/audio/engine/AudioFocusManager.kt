@@ -4,6 +4,9 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
+import android.util.Log
+
+private const val TAG = "SleepSoundFocus"
 
 interface AudioFocusCallbacks {
     fun onFocusLostPermanent()
@@ -39,8 +42,17 @@ class AudioFocusManager(
         .setWillPauseWhenDucked(false)
         .build()
 
-    fun acquire(): Boolean =
-        audioManager.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+    fun acquire(): Boolean {
+        val result = audioManager.requestAudioFocus(request)
+        val name = when (result) {
+            AudioManager.AUDIOFOCUS_REQUEST_GRANTED -> "GRANTED"
+            AudioManager.AUDIOFOCUS_REQUEST_FAILED -> "FAILED"
+            AudioManager.AUDIOFOCUS_REQUEST_DELAYED -> "DELAYED"
+            else -> "code=$result"
+        }
+        Log.i(TAG, "requestAudioFocus → $name")
+        return result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+    }
 
     fun release() {
         audioManager.abandonAudioFocusRequest(request)

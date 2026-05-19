@@ -11,7 +11,6 @@ import com.sleepsound.audio.procedural.Ocean
 import com.sleepsound.audio.procedural.PinkNoise
 import com.sleepsound.audio.procedural.Rain
 import com.sleepsound.audio.procedural.Thunderstorm
-import com.sleepsound.audio.procedural.TvStatic
 import com.sleepsound.audio.procedural.VioletNoise
 import com.sleepsound.audio.procedural.WhiteNoise
 import kotlinx.coroutines.CoroutineScope
@@ -51,7 +50,6 @@ object SoundCatalog {
         SoundId.PINK_NOISE -> PinkNoise()
         SoundId.WHITE_NOISE -> WhiteNoise()
         SoundId.VIOLET_NOISE -> VioletNoise()
-        SoundId.TV_STATIC -> TvStatic()
         SoundId.RAIN -> Rain()
         SoundId.THUNDERSTORM -> Thunderstorm()
         SoundId.DRYER -> Dryer()

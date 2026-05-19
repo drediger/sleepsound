@@ -10,7 +10,6 @@ enum class SoundId(val displayName: String, val tier: SoundTier) {
     PINK_NOISE("Pink noise", SoundTier.PREMIUM),
     WHITE_NOISE("White noise", SoundTier.FREE),
     VIOLET_NOISE("Violet noise", SoundTier.PREMIUM),
-    TV_STATIC("TV static", SoundTier.PREMIUM),
     RAIN("Rain", SoundTier.FREE),
     THUNDERSTORM("Thunderstorm", SoundTier.PREMIUM),
     DRYER("Dryer", SoundTier.PREMIUM),

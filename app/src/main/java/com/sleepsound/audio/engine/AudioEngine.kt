@@ -17,10 +17,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.PI
 import kotlin.math.sin
 
 private const val MASTER_FADE_MS = 1500L
+// Safety net: if AudioTrack.write blocks (disconnected headphones, sink
+// stall), force-cancel the render loop so the stop() callback can't hang.
+private const val FADE_TIMEOUT_MS = 3_000L
 private const val WAKE_LOCK_TIMEOUT_MS = 10L * 60L * 60L * 1000L  // 10 hours safety net
 
 /**
@@ -45,6 +49,10 @@ class AudioEngine(
     @Volatile private var currentGain = 0f
     @Volatile private var masterVolume = 1f
     @Volatile private var ducked = false
+    // Bumps on every start()/stop() — pending stop watchdogs use it to detect
+    // they've been superseded by a new start and bow out gracefully instead
+    // of cancelling the render job mid-playback.
+    @Volatile private var stopSequence = 0
 
     val isRendering: Boolean
         get() = renderJob?.isActive == true
@@ -67,6 +75,7 @@ class AudioEngine(
     }
 
     fun start() {
+        stopSequence++  // invalidates any in-flight stop watchdog
         if (renderJob?.isActive == true) {
             targetGain = if (ducked) 0.3f else 1f
             return
@@ -135,13 +144,20 @@ class AudioEngine(
     }
 
     fun stop(onComplete: () -> Unit = {}) {
-        if (renderJob?.isActive != true) {
+        val job = renderJob
+        if (job?.isActive != true) {
             onComplete()
             return
         }
+        val mySeq = ++stopSequence
         targetGain = 0f
         scope.launch {
-            renderJob?.join()
+            val finished = withTimeoutOrNull(FADE_TIMEOUT_MS) { job.join() } != null
+            if (mySeq != stopSequence) return@launch  // start() superseded us
+            if (!finished) {
+                job.cancel()
+                runCatching { job.join() }
+            }
             onComplete()
         }
     }

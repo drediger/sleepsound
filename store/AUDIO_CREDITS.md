@@ -1,15 +1,14 @@
 # Audio credits
 
-The four nature-sound files shipped in
-`app/src/main/assets/sounds/` are derived from publicly-shared
-recordings, all in the public domain (CC0 or equivalent). No
-attribution is legally required by these licenses, but recording the
-provenance keeps the chain of evidence intact if Google Play, an
-auditor, or a curious user ever asks.
+The six sample files shipped in `app/src/main/assets/sounds/` are
+derived from publicly-shared recordings, **all CC0 / public-domain**.
+No attribution is legally required, but recording the provenance keeps
+the chain of evidence intact if Google Play, an auditor, or a curious
+user ever asks.
 
-The other seven sounds (brown / pink / white / violet noise, TV static,
-Dryer, Fan) are 100 % mathematically generated in real time inside the
-app — no external recording, no license to attribute.
+The other four sounds (brown / pink / white / violet noise) are 100 %
+mathematically generated in real time inside the app — no external
+recording, no license to attribute.
 
 ---
 
@@ -70,6 +69,28 @@ app — no external recording, no license to attribute.
   that exceed 95 % of full scale.
 - **Target loudness after processing:** −23.8 LUFS integrated.
 
+## fan.opus
+
+- **Source:** *"Bedroom Fan"* by `SammySyanide` on Freesound.
+- **Item:** https://freesound.org/s/738640/
+- **Source format:** AAC, 48 kHz mono, 2:00.
+- **License:** **CC0** (`creativecommons.org/publicdomain/zero/1.0/`).
+- **Processing:** Trimmed to 12–102 s (steady run, skipping switch-on
+  ramp and end fadeout), upmixed to stereo at 48 kHz, 2 s self-crossfade
+  bridge for seamless looping, encoded as Opus 96 kbps,
+  loudness-normalized to −22 LUFS via `loudnorm`.
+
+## dryer.opus
+
+- **Source:** *"Tumble Dryer - Consistent Mechanical Hum and Rotating
+  Drum"* by `Funkelfang` on Freesound.
+- **Item:** https://freesound.org/s/845418/
+- **Source format:** 24-bit WAV, 48 kHz stereo, 1:31.
+- **License:** **CC0** (`creativecommons.org/publicdomain/zero/1.0/`).
+- **Processing:** Trimmed to 3–73 s, 2 s self-crossfade bridge,
+  encoded as Opus 96 kbps, loudness-normalized to −22 LUFS via
+  `loudnorm`.
+
 ---
 
 ## Loudness audit
@@ -83,6 +104,8 @@ after final encoding:
 | ocean.opus | −21.3 | +0.1 dBTP |
 | thunderstorm.opus | −16.4 | +1.2 dBTP |
 | fireplace.opus | −23.8 | +1.9 dBTP |
+| fan.opus | ~−22 (normalized) | ≤ −1.5 dBTP |
+| dryer.opus | ~−22 (normalized) | ≤ −1.5 dBTP |
 
 Spread is ~7 LU, which is within the "reasonable" range for an app
 that doesn't auto-balance perceived loudness at playback time. The

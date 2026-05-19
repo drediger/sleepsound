@@ -32,30 +32,31 @@
     font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
   .device { width:412px; height:915px; background:var(--pure-black); position:relative;
     display:flex; flex-direction:column; overflow:hidden; }
-  .header { position:relative; width:100%; padding:8px; height:64px; display:flex;
+  .header { position:relative; width:100%; padding:0 4px; display:flex;
     align-items:center; justify-content:center; }
-  .status { color:var(--dimmer-grey); font-size:15px; font-weight:300; text-align:center; }
-  .settings-btn { position:absolute; right:8px; top:50%; transform:translateY(-50%);
-    padding:12px; color:var(--dimmer-grey); }
+  .status { color:var(--dim-grey); font-size:14px; font-weight:300; letter-spacing:0.4px;
+    text-align:center; padding:14px 0; }
+  .settings-btn { position:absolute; right:4px; top:50%; transform:translateY(-50%);
+    padding:12px; color:var(--dim-grey); }
   .material-symbols-outlined { font-family:'Material Symbols Outlined'; font-weight:400;
     font-size:24px; display:inline-block; line-height:1; -webkit-font-smoothing:antialiased;
     font-feature-settings:'liga'; }
-  .grid { flex:1; padding:8px 16px; display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
-    align-content:start; }
+  .grid-wrap { flex:1; display:flex; align-items:center; justify-content:center; }
+  .grid { width:100%; padding:8px 16px; display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
   .tile { aspect-ratio:1/1; border-radius:12px; background:var(--pure-black);
     border:1px solid transparent; display:flex; flex-direction:column; align-items:center;
     justify-content:center; padding:8px; gap:6px; position:relative; }
   .tile.active { background:var(--surface-dark); border-color:var(--icon-grey); }
   .tile.buy-prompt { background:var(--surface-dark); border-color:var(--icon-grey); }
-  .tile-icon { font-size:28px; color:var(--dimmer-grey); }
+  .tile-icon { font-size:28px; color:var(--dim-grey); }
   .tile.active .tile-icon, .tile.buy-prompt .tile-icon { color:var(--icon-grey); }
-  .tile-label { font-size:11px; color:var(--dimmer-grey); text-align:center; line-height:1.15; }
-  .tile.active .tile-label { color:var(--dim-grey); }
+  .tile-label { font-size:11px; color:var(--dim-grey); text-align:center; line-height:1.15; }
+  .tile.active .tile-label { color:var(--icon-grey); }
   /* badges */
   .lock-badge { position:absolute; top:6px; right:6px; font-size:12px !important;
     color:var(--dimmer-grey); }
   .countdown-badge { position:absolute; top:6px; right:6px; background:var(--pure-black);
-    border-radius:6px; padding:1px 4px; color:var(--dim-grey); font-size:9px; font-weight:500; }
+    border-radius:6px; padding:1px 4px; color:var(--icon-grey); font-size:9px; font-weight:500; }
   .buy-pill { background:var(--pure-black); border-radius:999px; padding:3px 8px;
     color:var(--icon-grey); font-size:11px; font-weight:500; }
   /* mix panel */
@@ -87,6 +88,7 @@
       <div class="settings-btn"><span class="material-symbols-outlined">settings</span></div>
     </div>
 
+    <div class="grid-wrap">
     <div class="grid">
       <!-- Free, inactive — no badge -->
       <div class="tile">
@@ -146,6 +148,7 @@
         <div class="tile-label">Fireplace</div>
         <span class="material-symbols-outlined lock-badge">lock</span>
       </div>
+    </div>
     </div>
 
     <div class="mix-panel">

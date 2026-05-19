@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.LocalLaundryService
 import androidx.compose.material.icons.filled.Thunderstorm
-import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.Waves
 import androidx.compose.material3.Icon
@@ -99,7 +98,7 @@ fun SoundTile(
         label = "tilePress",
     )
     val contentColor = if (active) IconGrey else DimGrey
-    val textColor = if (active) DimGrey else DimGrey
+    val textColor = if (active) IconGrey else DimGrey
 
     Box(
         modifier = modifier
@@ -174,7 +173,7 @@ private fun CountdownBadge(remainingMs: Long, modifier: Modifier = Modifier) {
             .background(PureBlack)
             .padding(horizontal = 4.dp, vertical = 1.dp),
     ) {
-        Text(text = label, color = DimGrey, fontSize = 9.sp, fontWeight = FontWeight.Medium)
+        Text(text = label, color = IconGrey, fontSize = 9.sp, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -200,7 +199,6 @@ private fun iconFor(id: SoundId): ImageVector = when (id) {
     SoundId.PINK_NOISE -> Icons.Default.BlurOn
     SoundId.WHITE_NOISE -> Icons.Default.Brightness1
     SoundId.VIOLET_NOISE -> Icons.Default.Bolt
-    SoundId.TV_STATIC -> Icons.Default.Tv
     SoundId.RAIN -> Icons.Default.WaterDrop
     SoundId.THUNDERSTORM -> Icons.Default.Thunderstorm
     SoundId.DRYER -> Icons.Default.LocalLaundryService

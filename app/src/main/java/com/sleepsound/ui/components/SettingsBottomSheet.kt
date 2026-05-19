@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.compose.foundation.clickable
@@ -72,8 +71,6 @@ fun SettingsBottomSheet(
         .filter { it.tier == SoundTier.PREMIUM }
         .all { it in unlocked }
 
-    val manufacturer = Build.MANUFACTURER.replaceFirstChar { it.uppercase() }
-    val oemTitle = stringResource(R.string.settings_oem_title_format, manufacturer)
     val bundleLoadingText = stringResource(R.string.settings_bundle_loading)
     val bundleSubtitleFmt = stringResource(R.string.settings_bundle_subtitle_format)
     val restoreDefault = stringResource(R.string.settings_restore_subtitle)
@@ -94,11 +91,6 @@ fun SettingsBottomSheet(
                 title = stringResource(R.string.settings_battery_title),
                 subtitle = stringResource(R.string.settings_battery_subtitle),
                 onClick = { requestIgnoreBatteryOptimizations(context) },
-            )
-            SettingRow(
-                title = oemTitle,
-                subtitle = stringResource(R.string.settings_oem_subtitle),
-                onClick = { openOemInstructions(context) },
             )
             SettingToggle(
                 title = stringResource(R.string.settings_resume_title),
@@ -259,11 +251,6 @@ private fun requestIgnoreBatteryOptimizations(context: Context) {
         }
         context.startActivity(intent)
     }
-}
-
-private fun openOemInstructions(context: Context) {
-    val manufacturer = Build.MANUFACTURER.lowercase()
-    openUrl(context, "https://dontkillmyapp.com/$manufacturer")
 }
 
 private fun openUrl(context: Context, url: String) {

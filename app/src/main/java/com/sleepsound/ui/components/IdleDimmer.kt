@@ -42,20 +42,31 @@ fun IdleDimmer(
     var lastInteraction by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var isDim by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        while (true) {
-            val elapsed = System.currentTimeMillis() - lastInteraction
-            val shouldDim = elapsed > idleAfterMs
-            if (shouldDim != isDim) {
-                isDim = shouldDim
-                activity?.let {
-                    val lp = it.window.attributes
-                    lp.screenBrightness = if (isDim) dimBrightness
-                        else WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
-                    it.window.attributes = lp
-                }
+    fun applyBrightness(dim: Boolean) {
+        activity?.let {
+            val lp = it.window.attributes
+            lp.screenBrightness = if (dim) dimBrightness
+                else WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+            it.window.attributes = lp
+        }
+    }
+
+    // Re-key on lastInteraction so a tap immediately restarts the idle
+    // countdown — no waiting for the next poll tick. While dim, the only
+    // way out is the overlay's onClick (which writes lastInteraction and
+    // forces undim synchronously below).
+    LaunchedEffect(lastInteraction) {
+        val deadline = lastInteraction + idleAfterMs
+        val now = System.currentTimeMillis()
+        if (now >= deadline) {
+            if (!isDim) { isDim = true; applyBrightness(true) }
+        } else {
+            if (isDim) { isDim = false; applyBrightness(false) }
+            delay(deadline - now)
+            if (System.currentTimeMillis() >= lastInteraction + idleAfterMs) {
+                isDim = true
+                applyBrightness(true)
             }
-            delay(if (isDim) 5_000L else 500L)
         }
     }
 
@@ -91,6 +102,12 @@ fun IdleDimmer(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
                     ) {
+                        // Restore brightness synchronously so the user sees
+                        // the UI on the same frame. LaunchedEffect will
+                        // re-fire from the lastInteraction change but the
+                        // visible state is already correct.
+                        isDim = false
+                        applyBrightness(false)
                         lastInteraction = System.currentTimeMillis()
                     },
             )

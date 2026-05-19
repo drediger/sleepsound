@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
@@ -47,11 +48,11 @@ class SleepAudioService : LifecycleService() {
             onPlay = { PlaybackController.startPlayback(this) },
             onPause = {
                 PlaybackController.notifyServiceStopped()
-                handleStop()
+                handleStop("mediaSession.onPause")
             },
             onStop = {
                 PlaybackController.notifyServiceStopped()
-                handleStop()
+                handleStop("mediaSession.onStop")
             },
         )
 
@@ -69,6 +70,7 @@ class SleepAudioService : LifecycleService() {
 
     private fun handleStart() {
         val activeCount = PlaybackController.activeSounds.value.size
+        Log.i(TAG, "handleStart: activeCount=$activeCount")
         mediaSession.setPlaying(activeCount)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(
@@ -81,25 +83,29 @@ class SleepAudioService : LifecycleService() {
         }
         foregroundActive = true
 
-        if (!focusManager.acquire()) {
-            handleStop()
+        val gotFocus = focusManager.acquire()
+        Log.i(TAG, "handleStart: focusAcquired=$gotFocus")
+        if (!gotFocus) {
+            handleStop("focusDenied")
             return
         }
         noisyReceiver.register(this)
         engine.start()
     }
 
-    private fun handleStop() {
+    private fun handleStop(reason: String = "explicit") {
+        Log.i(TAG, "handleStop: reason=$reason")
         pausedForFocus = false
         mediaSession.setStopped()
         sleepTimer.cancel()
         noisyReceiver.unregister(this)
         focusManager.release()
         foregroundActive = false
-        engine.stop {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-            stopSelf()
-        }
+        // Drop the foreground notification immediately so the user sees stop
+        // take effect. The engine continues its fade-out for ~1.5 s; the
+        // service stays alive (background) until the callback fires stopSelf.
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        engine.stop { stopSelf() }
     }
 
     private fun startStateCollectors() {
@@ -150,28 +156,35 @@ class SleepAudioService : LifecycleService() {
 
     private fun onTimerExpired() {
         PlaybackController.notifyServiceStopped()
-        handleStop()
+        handleStop("timerExpired")
     }
 
     private fun onBecomingNoisy() {
+        Log.i(TAG, "onBecomingNoisy received")
         PlaybackController.notifyServiceStopped()
-        handleStop()
+        handleStop("becomingNoisy")
     }
 
     private val focusCallbacks = object : AudioFocusCallbacks {
         override fun onFocusLostPermanent() {
+            Log.i(TAG, "onFocusLostPermanent")
             PlaybackController.notifyServiceStopped()
-            handleStop()
+            handleStop("focusLossPermanent")
         }
         override fun onFocusLostTransient() {
+            Log.i(TAG, "onFocusLostTransient")
             // Phone call, voice recorder, alarm. Pause cleanly rather than
             // ducking — playing audio under another stream is intrusive at
             // 3am and at 30% volume isn't the right experience for a call.
             pausedForFocus = true
             engine.stop()
         }
-        override fun onFocusLostCanDuck() { engine.setDucked(true) }
+        override fun onFocusLostCanDuck() {
+            Log.i(TAG, "onFocusLostCanDuck")
+            engine.setDucked(true)
+        }
         override fun onFocusGain() {
+            Log.i(TAG, "onFocusGain pausedForFocus=$pausedForFocus")
             engine.setDucked(false)
             if (pausedForFocus) {
                 pausedForFocus = false
@@ -254,5 +267,6 @@ class SleepAudioService : LifecycleService() {
         const val ACTION_STOP = "com.sleepsound.action.STOP"
         private const val CHANNEL_ID = "sleep_audio"
         private const val NOTIFICATION_ID = 1
+        private const val TAG = "SleepSoundSvc"
     }
 }
