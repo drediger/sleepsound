@@ -81,7 +81,5 @@
     <string name="onboarding_p2_title">Keep audio alive overnight.</string>
     <string name="onboarding_p2_body">Android may stop SleepSound mid-night to save battery. The system dialog asks if you want to exempt the app — choose Allow to keep audio playing until your timer ends.</string>
     <string name="onboarding_p2_action">Open exemption dialog</string>
-    <string name="onboarding_p3_title">Your phone may need an extra step.</string>
-    <string name="onboarding_p3_body">Samsung, Xiaomi, OnePlus, Huawei, and a few others ship an extra background-kill layer that ignores Android\'s settings. The page below tells you the one toggle for your phone.</string>
-    <string name="onboarding_p3_action">Open guide for this phone</string>
+    <string name="onboarding_p2_fulfilled">Battery exemption granted</string>
 </resources>

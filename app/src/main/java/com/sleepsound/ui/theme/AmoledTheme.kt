@@ -15,6 +15,7 @@ val DimGrey = Color(0xFF666666)
 val DimmerGrey = Color(0xFF333333)
 val SurfaceDark = Color(0xFF111111)
 val IconGrey = Color(0xFF888888)
+val SoftWhite = Color(0xFFCCCCCC)
 
 private val AmoledColors = darkColorScheme(
     primary = IconGrey,

@@ -142,7 +142,7 @@ fun PlayerScreen() {
                 ) {
                     Text(
                         text = statusMsg,
-                        color = DimmerGrey,
+                        color = DimGrey,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Light,
                         textAlign = TextAlign.Center,

@@ -98,8 +98,8 @@ fun SoundTile(
         targetValue = if (pressed) 0.94f else 1f,
         label = "tilePress",
     )
-    val contentColor = if (active) IconGrey else DimmerGrey
-    val textColor = if (active) DimGrey else DimmerGrey
+    val contentColor = if (active) IconGrey else DimGrey
+    val textColor = if (active) DimGrey else DimGrey
 
     Box(
         modifier = modifier
@@ -159,7 +159,7 @@ private fun LockBadge(modifier: Modifier = Modifier) {
     Icon(
         imageVector = Icons.Default.Lock,
         contentDescription = stringResource(R.string.cd_locked_tile),
-        tint = DimmerGrey,
+        tint = DimGrey,
         modifier = modifier.size(12.dp),
     )
 }

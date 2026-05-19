@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.compose.animation.AnimatedContent
@@ -34,7 +33,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.Bedtime
-import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,14 +56,15 @@ import com.sleepsound.ui.theme.DimGrey
 import com.sleepsound.ui.theme.DimmerGrey
 import com.sleepsound.ui.theme.IconGrey
 import com.sleepsound.ui.theme.PureBlack
+import com.sleepsound.ui.theme.SoftWhite
 import com.sleepsound.ui.theme.SurfaceDark
 
 /**
- * Three-card first-run carousel. Shown over the player on first launch:
+ * Two-card first-run carousel. Shown over the player on first launch:
  *   1. What SleepSound is (the five-pillar promise + the four free sounds).
  *   2. Battery-optimization exemption opt-in (the #1 cause of overnight
- *      audio death).
- *   3. OEM-killer guidance link (specific to the user's manufacturer).
+ *      audio death). The Reliability section in Settings has the deeper
+ *      OEM-killer guidance for the few users who hit that case.
  *
  * Either the "Next" / "Done" button or the "Skip" link marks it completed.
  */
@@ -112,7 +112,7 @@ fun OnboardingCarousel(onComplete: () -> Unit) {
                     Spacer(modifier = Modifier.height(32.dp))
                     Text(
                         text = current.title,
-                        color = DimGrey,
+                        color = SoftWhite,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Light,
                         textAlign = TextAlign.Center,
@@ -120,17 +120,23 @@ fun OnboardingCarousel(onComplete: () -> Unit) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = current.body,
-                        color = DimmerGrey,
+                        color = IconGrey,
                         fontSize = 14.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(horizontal = 8.dp),
                     )
                     current.action?.let { action ->
                         Spacer(modifier = Modifier.height(24.dp))
-                        PrimaryButton(
-                            text = action.label,
-                            onClick = { action.run(context) },
-                        )
+                        if (action.fulfilled) {
+                            FulfilledPill(
+                                text = action.fulfilledLabel ?: action.label,
+                            )
+                        } else {
+                            PrimaryButton(
+                                text = action.label,
+                                onClick = { action.run(context) },
+                            )
+                        }
                     }
                 }
             }
@@ -164,6 +170,27 @@ private fun complete(onComplete: () -> Unit) {
 }
 
 @Composable
+private fun FulfilledPill(text: String) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(24.dp))
+            .background(SurfaceDark)
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = null,
+                tint = IconGrey,
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = text, color = DimGrey, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+        }
+    }
+}
+
+@Composable
 private fun PrimaryButton(text: String, onClick: () -> Unit) {
     Box(
         modifier = Modifier
@@ -193,7 +220,7 @@ private fun TextButton(text: String, onClick: () -> Unit) {
             )
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
-        Text(text = text, color = DimmerGrey, fontSize = 14.sp)
+        Text(text = text, color = DimGrey, fontSize = 14.sp)
     }
 }
 
@@ -216,6 +243,10 @@ private fun DotIndicator(count: Int, current: Int) {
 private data class OnboardingAction(
     val label: String,
     val run: (Context) -> Unit,
+    /** When true, the button is replaced with a static "done" pill. */
+    val fulfilled: Boolean = false,
+    /** Text to show when [fulfilled]; defaults to [label] if null. */
+    val fulfilledLabel: String? = null,
 )
 
 private data class OnboardingPage(
@@ -226,32 +257,31 @@ private data class OnboardingPage(
 )
 
 @Composable
-private fun onboardingPages(): List<OnboardingPage> = listOf(
-    OnboardingPage(
-        icon = Icons.Default.Bedtime,
-        title = stringResource(R.string.onboarding_p1_title),
-        body = stringResource(R.string.onboarding_p1_body),
-        action = null,
-    ),
-    OnboardingPage(
-        icon = Icons.Default.BatteryFull,
-        title = stringResource(R.string.onboarding_p2_title),
-        body = stringResource(R.string.onboarding_p2_body),
-        action = OnboardingAction(
-            label = stringResource(R.string.onboarding_p2_action),
-            run = ::requestIgnoreBatteryOptimizations,
+private fun onboardingPages(): List<OnboardingPage> {
+    val context = LocalContext.current
+    val alreadyExempt = (context.getSystemService(Context.POWER_SERVICE) as? PowerManager)
+        ?.isIgnoringBatteryOptimizations(context.packageName) == true
+
+    return listOf(
+        OnboardingPage(
+            icon = Icons.Default.Bedtime,
+            title = stringResource(R.string.onboarding_p1_title),
+            body = stringResource(R.string.onboarding_p1_body),
+            action = null,
         ),
-    ),
-    OnboardingPage(
-        icon = Icons.Default.PhoneAndroid,
-        title = stringResource(R.string.onboarding_p3_title),
-        body = stringResource(R.string.onboarding_p3_body),
-        action = OnboardingAction(
-            label = stringResource(R.string.onboarding_p3_action),
-            run = ::openOemInstructions,
+        OnboardingPage(
+            icon = Icons.Default.BatteryFull,
+            title = stringResource(R.string.onboarding_p2_title),
+            body = stringResource(R.string.onboarding_p2_body),
+            action = OnboardingAction(
+                label = stringResource(R.string.onboarding_p2_action),
+                run = ::requestIgnoreBatteryOptimizations,
+                fulfilled = alreadyExempt,
+                fulfilledLabel = stringResource(R.string.onboarding_p2_fulfilled),
+            ),
         ),
-    ),
-)
+    )
+}
 
 @SuppressLint("BatteryLife")
 private fun requestIgnoreBatteryOptimizations(context: Context) {
@@ -265,15 +295,3 @@ private fun requestIgnoreBatteryOptimizations(context: Context) {
         context.startActivity(intent)
     }
 }
-
-private fun openOemInstructions(context: Context) {
-    val manufacturer = Build.MANUFACTURER.lowercase()
-    val url = "https://dontkillmyapp.com/$manufacturer"
-    runCatching {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        context.startActivity(intent)
-    }
-}
-
