@@ -8,7 +8,7 @@
 
 **The pitch.** Every popular sleep-sound app on the Play Store is built for daytime browsing and monetized for engagement: bright marketing UIs, account requirements, ads or subscription pop-ups that fire at 3am, and audio that dies mid-night under Doze or Bluetooth interruptions. This app inverts every one of those defaults.
 
-**The single-sentence ad.** *"Sleep sound app. No ads. No account. No subscription. No loops. Won't wake you. One-time $4."*
+**The single-sentence ad.** *"Sleep sound app. No ads. No account. No subscription. Won't wake you. Free, with $0.99 per premium sound."*
 
 **Target user.** Android power users (Reddit r/Android, r/androidapps regulars), light-sleepers, parents of babies, audiophiles, and anyone burned by Calm/BetterSleep subscription patterns. Not the meditation-content market — we don't compete with Calm on guided meditation; we compete on the sound-maker job-to-be-done.
 
@@ -46,9 +46,9 @@
 
 4. **Account-required for what's a stateless utility.** Calm, BetterSleep, Headspace all require sign-in for paid features. Breaks offline use, creates "I changed phones at 11pm" failures, generates marketing email spam.
 
-5. **Looped audio masquerading as continuous noise.** Even multi-million-install apps loop 30-120s clips. The looping is subliminally detectable and pulls light sleepers awake.
+5. **Short looped audio masquerading as continuous noise.** Most apps loop 30-120s clips. The looping is subliminally detectable and pulls light sleepers awake.
 
-**Our wedge:** Attack #1 (reliability), #3 (true AMOLED), and #5 (procedural, not looped). The best of the existing crop nail one of these; none nails all three in a single bedside-app form.
+**Our wedge:** Attack #1 (reliability), #3 (true AMOLED), and #5 (real-time math for noise colors / appliance sounds; 10-minute seamless field recordings for nature sounds — not 30-second clips on repeat). The best of the existing crop nail one of these; none nails all three in a single bedside-app form.
 
 ---
 
@@ -80,7 +80,7 @@ The free four are the four most-searched on the Play Store for noise / sleep app
 
 ### Deferred to v1.x
 
-- **Bundled high-quality sample assets** (rain, thunder, ocean, fire, fan recordings to override procedural generators). The `SampleSource` infrastructure already loops cleanly; this is a content task, not a code task. **Caveat:** shipping samples revisits the "no looped audio" marketing claim — once we ship samples, the in-app/store wording needs to change from "Procedural noise generation, not 30-second loops" to something like "Procedural noise + seamless multi-minute loops."
+- ~~**Bundled high-quality sample assets** (rain, thunder, ocean, fire, fan recordings to override procedural generators).~~ **Shipped 2026-05-19.** Four CC0 / public-domain field recordings (rain, ocean, thunderstorm, fireplace) in `app/src/main/assets/sounds/`, license attributions in [`store/AUDIO_CREDITS.md`](store/AUDIO_CREDITS.md). All re-encoded as 10-minute seamless Opus loops at 48 kHz stereo with 2-second crossfade-bridges and loudness-normalized to ~-22 LUFS. Dryer + fan still need recordings (license-clean options were scarce on auth-free archives).
 - **Built-in presets + user-saved mixes** (e.g. "Storm night", "Office afternoon"). Local-only persistence.
 - **Onboarding carousel** for first-run battery-optimization + OEM-killer walkthrough (today the same guidance lives in Settings → Reliability, but it's not pushed at first launch).
 - v1.1: Smart wake (gradual transition to wake sound at alarm time).

@@ -52,7 +52,7 @@ anti-patterns this app rejects.
 
 ## Full description  *(4000-char limit)*
 
-The version below is **3 308 characters** (well under 4 000). It does *not*
+The version below is **3 594 characters** (well under 4 000). It does *not*
 repeat the short description, per Google's best-practices guidance. It avoids
 banned phrasing: no "#1", no "Best of 20xx", no pricing claims, no emojis,
 no Editor's Choice / New badges.
@@ -81,8 +81,12 @@ WHAT YOU GET
 BUILT FOR NIGHT-TIME
 • True AMOLED black throughout. The screen auto-dims after 30 seconds of
   no touch so it disappears at the bedside.
-• Procedural noise generation, not 30-second loops. Light sleepers will
-  hear the difference.
+• Where math captures the sound (brown, pink, white, violet noise, TV
+  static, dryer, fan), audio is generated in real time. No looped clip
+  on repeat.
+• Where math doesn't (rain, ocean, thunderstorm, fireplace), the app
+  ships 10-minute seamless field recordings with crossfade bridges —
+  not the 30-second clips other sleep apps repeat every half-minute.
 • A media foreground service keeps audio alive through screen-off, Doze,
   and app-swipe-away.
 • Bluetooth or headphone disconnect pauses cleanly — your phone speaker
@@ -99,7 +103,7 @@ WHAT IT WILL NEVER DO
 • No account, no sign-in, no email collection.
 • No subscription. Premium sounds are one-time $0.99 purchases.
 • No tracking, no analytics, no telemetry beyond crash reports.
-• No looped audio masquerading as continuous noise.
+• No 30-second clips on repeat — see the BUILT FOR NIGHT-TIME bullet.
 
 WHO IT'S FOR
 Light sleepers, parents of babies, audiophiles, and anyone burned by
@@ -129,7 +133,7 @@ opening the privacy policy or an OEM help page uses your default
 browser. Full policy: <PRIVACY_POLICY_URL>.
 ```
 
-**Length:** 3 308 characters (counted with Python `len(...)`). ✓
+**Length:** 3 594 characters (counted with Python `len(...)`). ✓
 
 ---
 
