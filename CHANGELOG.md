@@ -83,13 +83,30 @@ on-device validation, optional gradle-wrapper commit.
   Playwright install locations.
 
 ### Known gaps (deferred)
-- Gradle wrapper jar / scripts not committed — `./gradlew` won't
-  bootstrap from a fresh clone. Android Studio will generate on first
-  sync, or run `gradle wrapper --gradle-version 8.11.1` once.
-- No unit / UI / screenshot tests yet.
+- No Compose UI / screenshot / instrumented tests. JVM unit tests
+  cover procedural audio + SoundId invariants only.
 - No CI configuration (GitHub Actions).
-- No bundled sample audio recordings — sounds are procedural-only.
-  `SampleSource` hook exists for future drops.
-- Launcher icon is a basic crescent vector; a polished design pass is
-  punch-list.
-- Privacy-policy URL in `strings.xml` is still a placeholder.
+- No Crashlytics integration — first user crash will be the only
+  signal until that's added.
+
+### Resolved post-rc1 (in main, awaiting next tag)
+- Renamed app to **Sleep Soundly** (display name + onboarding copy);
+  package id unchanged.
+- New moon launcher icon at all five densities, adaptive-icon
+  background set to the artwork's navy.
+- Dropped TV static (audibly indistinguishable from white noise);
+  catalog now 4 free + 6 premium = 10 sounds.
+- Six CC0 sample recordings now bundled — fan + dryer joined the
+  existing rain / ocean / thunderstorm / fireplace.
+- Privacy policy hosted at
+  <https://drediger.github.io/sleepsound/privacy/> via GitHub Pages
+  from `main:/docs`. `strings.xml#privacy_policy_url` points at it.
+- Notification clears instantly on stop instead of after the engine's
+  1.5 s fade. `AudioEngine.stop` watchdog now respects a subsequent
+  `start()` and bows out instead of cancelling the render job
+  mid-new-playback.
+- `IdleDimmer` wakes the screen synchronously on tap (was a 3–5 s
+  delay while the polling loop's next tick arrived).
+- Settings sheet dropped the OEM/Samsung row.
+- Player grid centers vertically; last-row orphan tile sits centered
+  too.
