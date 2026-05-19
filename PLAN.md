@@ -56,7 +56,7 @@
 
 ### In v1.0 (Play Store launch)
 
-- 11 procedurally-generated sources (brown, pink, white, violet noise, TV static, rain, thunderstorm, dryer, ocean, fan, fireplace), all computed in real time at 48 kHz PCM16. No bundled sample assets in v1.0 — `SampleSource` exists as a hook so future drops into `app/src/main/assets/sounds/<id>.<ext>` override any sound transparently.
+- 10 sources (brown, pink, white, violet noise — procedural; rain, thunderstorm, dryer, ocean, fan, fireplace — CC0 sample recordings in `app/src/main/assets/sounds/`). Each naturalistic sound's procedural generator remains in-tree as a fallback if the asset is missing. TV static was dropped 2026-05-19 because it was audibly indistinguishable from white noise.
 - Multi-layer mixer: every active source mixes simultaneously with per-source volume sliders and a mute toggle per row (no fixed cap).
 - Foreground audio service that keeps audio alive through screen-off, Doze, and app-swipe-away. **Bluetooth or headphone disconnect pauses cleanly** (Android best-practice — speakers don't blast at 3am).
 - MediaSession integration (lock-screen controls, notification, BT media keys, Android Auto) via `MediaSessionCompat` + MediaStyle notification.
@@ -74,13 +74,13 @@
 | Tier | Sounds (sample-or-procedural) |
 |---|---|
 | **Free (4)** | Brown noise, White noise, Rain, Ocean |
-| **Premium ($0.99 each)** | Pink noise, Violet noise, TV static, Thunderstorm, Dryer, Fan, Fireplace |
+| **Premium ($0.99 each)** | Pink noise, Violet noise, Thunderstorm, Dryer, Fan, Fireplace |
 
 The free four are the four most-searched on the Play Store for noise / sleep apps. Premium covers everything else, including any future additions. Open decision: whether to also offer an "all-access" bundle SKU at ~$3.99 for users who want everything in one purchase.
 
 ### Deferred to v1.x
 
-- ~~**Bundled high-quality sample assets** (rain, thunder, ocean, fire, fan recordings to override procedural generators).~~ **Shipped 2026-05-19.** Four CC0 / public-domain field recordings (rain, ocean, thunderstorm, fireplace) in `app/src/main/assets/sounds/`, license attributions in [`store/AUDIO_CREDITS.md`](store/AUDIO_CREDITS.md). All re-encoded as 10-minute seamless Opus loops at 48 kHz stereo with 2-second crossfade-bridges and loudness-normalized to ~-22 LUFS. Dryer + fan still need recordings (license-clean options were scarce on auth-free archives).
+- ~~**Bundled high-quality sample assets** (rain, thunder, ocean, fire, fan, dryer recordings to override procedural generators).~~ **Shipped 2026-05-19.** Six CC0 / public-domain field recordings (rain, ocean, thunderstorm, fireplace, fan, dryer) in `app/src/main/assets/sounds/`, license attributions in [`store/AUDIO_CREDITS.md`](store/AUDIO_CREDITS.md). Nature sounds are 10-minute seamless Opus loops at 48 kHz stereo with 2-second crossfade-bridges; fan/dryer are shorter (70–90 s) but still self-crossfaded for seamless looping. All loudness-normalized to ~-22 LUFS.
 - **Built-in presets + user-saved mixes** (e.g. "Storm night", "Office afternoon"). Local-only persistence.
 - **Onboarding carousel** for first-run battery-optimization + OEM-killer walkthrough (today the same guidance lives in Settings → Reliability, but it's not pushed at first launch).
 - v1.1: Smart wake (gradual transition to wake sound at alarm time).

@@ -7,18 +7,20 @@
 ## Which sounds we want
 
 Per [`audio/SoundId.kt`](../../app/src/main/java/com/sleepsound/audio/SoundId.kt),
-these are the nature sounds where procedural synthesis falls short and
-real recordings are needed:
+these are the sounds where procedural synthesis falls short and real
+recordings ship in `app/src/main/assets/sounds/`:
 
-| File name to drop in | What to look for |
+| File name | What to look for |
 |---|---|
 | `rain.ogg` | Steady rainfall on a soft surface (leaves, ground) — avoid hard pavement / metal which sound harsh at night. 10+ minute source ideal. No thunder, no wind, no traffic. |
 | `ocean.ogg` | Continuous wave-on-beach loop. Pick a recording with regular wave timing (every 6-15 s). Avoid recordings with seagulls, voices, or sudden wave crashes. |
 | `thunderstorm.ogg` | Distant thunder + rain. Want a long mix where thunder is ambient, not jump-scare. |
 | `fireplace.ogg` | Crackling fire, indoor recording, no music or voices. Lots of variety in pop frequency is good. |
+| `fan.ogg` | Steady box fan or oscillating fan, single speed throughout. Avoid clicks, oscillation thumps, music. ~2 min source works (crossfade-bridge for seamless loop). |
+| `dryer.ogg` | Clothes dryer at consistent speed, mechanical hum + drum rotation. Avoid the buzzer / cycle-end signal, music, voices. |
 
-The seven other sounds (the four noise colors, TV static, Dryer, Fan)
-stay procedural — math captures them well, no sample needed.
+The four noise colors (brown, pink, white, violet) remain procedural —
+math captures them better than any recording.
 
 ---
 

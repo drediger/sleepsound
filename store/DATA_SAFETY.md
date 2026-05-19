@@ -1,4 +1,4 @@
-# Data Safety form — SleepSound
+# Data Safety form — Sleep Soundly
 
 > Question-by-question answers for the Google Play Console **Data safety**
 > section, sourced from
@@ -30,7 +30,7 @@ Why this is correct:
   third-party SDK references.
 
 Google's own definition supports this answer: *"Collection refers to
-transmitting data from your app off a user's device."* SleepSound never
+transmitting data from your app off a user's device."* Sleep Soundly never
 transmits anything.
 
 Google asks: *"Is all of the user data collected by your app encrypted in
@@ -47,7 +47,7 @@ be deleted?"*
 >
 > Locally-stored preferences (selected sounds, per-sound volume,
 > resume-on-reboot toggle) can be cleared by the user at any time via
-> Android Settings → Apps → SleepSound → Storage → Clear storage. This is
+> Android Settings → Apps → Sleep Soundly → Storage → Clear storage. This is
 > a standard Android facility; we do not host any server-side data.
 
 ---
@@ -92,13 +92,13 @@ disclose.
 
 The v1.0 release ships seven $0.99 one-time per-sound unlocks. Each
 purchase is handled entirely by **Google Play Billing**. Payment info is
-collected by Google, not by SleepSound, and is governed by
+collected by Google, not by Sleep Soundly, and is governed by
 [Google's privacy policy](https://policies.google.com/privacy). Per
 Google's guidance, "data collected and processed by Google Play" does
 not need to be declared in your Data Safety form. Mark **"Payment info"
-as Not collected, not shared** by SleepSound itself.
+as Not collected, not shared** by Sleep Soundly itself.
 
-The only data SleepSound itself stores about purchases is *which*
+The only data Sleep Soundly itself stores about purchases is *which*
 product IDs the user owns — kept in app-private SharedPreferences
 (`entitlements.unlocked_sound_ids`) to avoid a Play Billing round-trip on
 every launch. This is local-only state, not "collection" in Google's
@@ -122,14 +122,14 @@ Requirements (sourced from
   app must be named in the privacy policy."*
 
 Suggested hosting: GitHub Pages, Cloudflare Pages, or a static page on
-your own domain. Set the HTML `<title>` to "Privacy policy — SleepSound".
+your own domain. Set the HTML `<title>` to "Privacy policy — Sleep Soundly".
 
 ---
 
 ## Section 4 — Permissions disclosed in the listing
 
 Google does not ask about permissions in the Data Safety form itself,
-but reviewers cross-reference them. The permissions SleepSound requests
+but reviewers cross-reference them. The permissions Sleep Soundly requests
 (from `AndroidManifest.xml`), and the user-facing justification for each,
 are:
 

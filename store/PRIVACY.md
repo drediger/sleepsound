@@ -1,4 +1,4 @@
-# Privacy policy — SleepSound
+# Privacy policy — Sleep Soundly
 
 > **Sourcing note.** Every required section in this policy maps to an
 > explicit Google Play User Data policy requirement quoted in the
@@ -10,14 +10,14 @@
 **Effective date:** *<replace with publication date>*
 **Last updated:** *<replace with publication date>*
 
-This is the privacy policy for **SleepSound**, an Android sleep-sound app
+This is the privacy policy for **Sleep Soundly**, an Android sleep-sound app
 published on Google Play by **\<Developer / Company name here\>** ("we",
 "us", or "the developer"). [Required: entity in the listing must appear
 in the privacy policy.]
 
 ## Summary
 
-SleepSound is a fully offline app. It does **not** collect, transmit,
+Sleep Soundly is a fully offline app. It does **not** collect, transmit,
 share, or sell any personal or sensitive user data. It has no analytics,
 no advertising identifiers, no crash-reporting service, and no network
 calls of its own.
@@ -31,7 +31,7 @@ We access or collect **no personal or sensitive user data**. Specifically:
 - We do not access your location, contacts, calendar, camera, microphone,
   files, photos, SMS, or call logs.
 - We do not use any Advertising ID, ad-attribution SDK, or analytics SDK.
-- We do not maintain a server. The SleepSound application binary does not
+- We do not maintain a server. The Sleep Soundly application binary does not
   declare the Android `INTERNET` permission and is incapable of making
   outbound network connections from within the app.
 - Crash reports collected automatically by Google Play (via the
@@ -54,7 +54,7 @@ never leaves your device:
 - Whether you've opted into "resume on reboot."
 
 You can delete all of this at any time by clearing the app's storage
-(Android Settings → Apps → SleepSound → Storage → Clear storage) or by
+(Android Settings → Apps → Sleep Soundly → Storage → Clear storage) or by
 uninstalling the app.
 
 ## Data sharing
@@ -80,7 +80,7 @@ no control over and receive no copy of that information.
 
 ## Security
 
-Because SleepSound does not transmit user data, there is no in-transit
+Because Sleep Soundly does not transmit user data, there is no in-transit
 data to protect. Locally stored preferences use Android's standard
 app-private storage, which Android isolates from other apps by default.
 
@@ -96,7 +96,7 @@ the app, both of which immediately and permanently remove them.
 
 ## Children's privacy
 
-SleepSound is intended for adults. It does not knowingly collect any
+Sleep Soundly is intended for adults. It does not knowingly collect any
 information from children under 13 (or the applicable age in your
 jurisdiction). If you believe a child has provided information to us,
 please contact us using the contact details below and we will delete any

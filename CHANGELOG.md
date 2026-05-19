@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to SleepSound are recorded here. Format follows
+All notable changes to Sleep Soundly are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/). Dates are YYYY-MM-DD.
 
 ## [1.0.0-rc1] — 2026-05-19
@@ -11,8 +11,8 @@ privacy-policy URL, Play Console content rating + closed-test track,
 on-device validation, optional gradle-wrapper commit.
 
 ### Added — audio engine
-- 11 procedurally-generated sources: brown / pink / white / violet
-  noise, rain, thunderstorm, ocean, fireplace, fan, dryer, TV static.
+- 10 procedurally-generated sources: brown / pink / white / violet
+  noise, rain, thunderstorm, ocean, fireplace, fan, dryer.
 - Custom `AudioTrack` pipeline at 48 kHz PCM16 stereo with `LayerMixer`
   applying per-layer 800 ms linear fades.
 - Master 1.5 s equal-power (sin) fade applied on play/stop/timer/focus.
@@ -45,14 +45,14 @@ on-device validation, optional gradle-wrapper commit.
 - Settings sheet: Reliability / Purchases / About sections with
   divider, version pulled from `BuildConfig.VERSION_NAME`, privacy
   link, "Restore purchases" row.
-- First-run onboarding carousel: what SleepSound is, battery-opt opt-in,
+- First-run onboarding carousel: what Sleep Soundly is, battery-opt opt-in,
   OEM-killer link. Skippable. Persists shown flag.
 - Circular stop button (media-player feel) instead of pill chip.
 - Snackbar surfacing Play Billing purchase results.
 
 ### Added — monetization (Play Billing 8.3.0)
 - Free tier (4 sounds): brown noise, white noise, rain, ocean.
-- Premium tier (7 × $0.99): pink noise, violet noise, TV static,
+- Premium tier (6 × $0.99): pink noise, violet noise,
   thunderstorm, dryer, fan, fireplace.
 - All-sounds bundle SKU (`bundle_all_sounds`) at $3.99 unlocks every
   premium SoundId in one purchase.

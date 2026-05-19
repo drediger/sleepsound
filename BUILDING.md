@@ -1,4 +1,4 @@
-# Building SleepSound
+# Building Sleep Soundly
 
 End-to-end instructions for a fresh machine through a signed Play Store
 upload bundle.
@@ -63,10 +63,17 @@ Android Studio once and let it produce them.
 ./gradlew :app:assembleDebug      # debug APK
 ./gradlew :app:assembleRelease    # release APK (needs signing config)
 ./gradlew :app:bundleRelease      # release .aab for Play Console
+./gradlew :app:testDebugUnitTest  # JVM unit tests (procedural audio + SoundId)
 ```
 
 Debug builds use the application ID `com.sleepsound.debug` so they can
 be installed alongside a production install.
+
+The unit-test suite is JVM-only (no instrumented Android tests yet) —
+JUnit 4 with two test classes covering procedural audio determinism +
+SoundId tier invariants. Run them before every commit; they finish in
+~15 s including Gradle warm-up. Compose UI and instrumented tests are
+still on the punch list.
 
 ---
 
@@ -167,11 +174,10 @@ adb shell am start -a android.intent.action.MAIN \
 5. Complete the Data Safety form using answers from [`store/DATA_SAFETY.md`](./store/DATA_SAFETY.md).
 6. Provide the hosted privacy-policy URL (`docs/privacy/` published via
    GitHub Pages — see below).
-7. Register seven $0.99 per-sound product IDs plus the bundle:
+7. Register six $0.99 per-sound product IDs plus the bundle:
    ```
    sound_pink_noise
    sound_violet_noise
-   sound_tv_static
    sound_thunderstorm
    sound_dryer
    sound_fan
@@ -191,21 +197,30 @@ adb shell am start -a android.intent.action.MAIN \
 
 Google Play requires a publicly accessible, non-PDF, non-editable URL.
 
-The repo includes a ready-to-publish HTML version at
-[`docs/privacy/index.html`](./docs/privacy/index.html).
+Sleep Soundly's policy is served via GitHub Pages from this repo at
+<https://drediger.github.io/sleepsound/privacy/>. Pages source is
+`main` branch, `/docs` folder. The repo must be public for free-tier
+Pages — Sleep Soundly's is.
 
-1. In the GitHub repo settings, enable **Pages**: source = `main`
-   branch, folder = `/docs`.
-2. The privacy policy will be live at
-   `https://<your-user>.github.io/sleepsound/privacy/`.
-3. Update [`app/src/main/res/values/strings.xml`](./app/src/main/res/values/strings.xml)
-   `privacy_policy_url` to the live URL.
-4. Update the `<PRIVACY_POLICY_URL>` placeholder in
-   [`store/STORE_LISTING.md`](./store/STORE_LISTING.md) too.
+To rotate the URL (e.g. moving to a custom domain):
+
+1. Edit `docs/privacy/index.html` (or add a new file).
+2. Update `app/src/main/res/values/strings.xml#privacy_policy_url`.
+3. Update `store/STORE_LISTING.md` PRIVACY section.
+4. Push to `main` — Pages rebuilds within ~30 s.
 
 ---
 
-## 8. Generating preview screenshots
+## 8. Real-device QA
+
+Pre-launch test matrix lives in
+[`store/QA_MATRIX.md`](./store/QA_MATRIX.md). Three checks are
+load-bearing for the app's positioning (overnight survival, true
+AMOLED black, no-tracking audit); the rest are device-coverage.
+
+---
+
+## 9. Generating preview screenshots
 
 Independent of the Android build. Used during UI iteration without
 hitting an emulator.

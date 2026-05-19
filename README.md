@@ -1,4 +1,4 @@
-# SleepSound
+# Sleep Soundly
 
 > A no-ads / no-account / no-subscription Android sleep-sound app.
 > AMOLED-true-black. Won't wake you at 3 am. One-time $0.99 unlocks per
@@ -8,7 +8,7 @@
 
 ## What this is
 
-SleepSound is positioned against the subscription-app pattern (Calm,
+Sleep Soundly is positioned against the subscription-app pattern (Calm,
 BetterSleep, Headspace) on the Play Store. The full positioning and
 five-pillar promise live in [`PLAN.md`](./PLAN.md) §1, with the public
 store copy in [`store/STORE_LISTING.md`](./store/STORE_LISTING.md).

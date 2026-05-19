@@ -112,4 +112,5 @@ dependencies {
     implementation(libs.billing.ktx)
     implementation(libs.androidx.media)
     debugImplementation(libs.androidx.ui.tooling)
+    testImplementation(libs.junit)
 }
