@@ -24,3 +24,4 @@ release/
 
 # Generated preview screenshots (run `node tools/preview/screenshot.mjs` to regen)
 /tools/preview/screenshots/
+/tools/preview/play-assets/

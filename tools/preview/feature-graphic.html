@@ -1,0 +1,152 @@
+<!doctype html>
+<!-- viewport: 1024x500 -->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>SleepSound — Play Store feature graphic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,1,0&family=Inter:wght@200;300;400;500&display=swap"
+  rel="stylesheet">
+<style>
+  :root {
+    --pure-black: #000000;
+    --surface-dark: #111111;
+    --dimmer-grey: #333333;
+    --dim-grey: #666666;
+    --icon-grey: #aaaaaa;
+    --bright: #cccccc;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--pure-black);
+    color: var(--bright);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    width: 1024px;
+    height: 500px;
+    overflow: hidden;
+  }
+  .container {
+    width: 1024px;
+    height: 500px;
+    display: flex;
+    align-items: center;
+    padding: 0 64px;
+    gap: 56px;
+    /* Very subtle radial vignette toward bottom-right where the moon sits */
+    background:
+      radial-gradient(ellipse at 78% 70%, rgba(255,255,255,0.04), transparent 50%),
+      var(--pure-black);
+  }
+  .left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .wordmark {
+    color: var(--bright);
+    font-weight: 200;
+    font-size: 64px;
+    letter-spacing: -1.5px;
+    line-height: 1;
+  }
+  .tagline {
+    color: var(--icon-grey);
+    font-weight: 300;
+    font-size: 22px;
+    line-height: 1.35;
+    max-width: 480px;
+  }
+  .pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .pill {
+    background: var(--surface-dark);
+    color: var(--icon-grey);
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  .right {
+    flex: 0 0 320px;
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Crescent moon — outer circle minus offset inner */
+  .moon {
+    position: relative;
+    width: 200px;
+    height: 200px;
+  }
+  .moon .outer {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--bright);
+  }
+  .moon .inner {
+    position: absolute;
+    top: -10%;
+    right: -22%;
+    width: 90%;
+    height: 90%;
+    border-radius: 50%;
+    background: var(--pure-black);
+  }
+  /* Faint tile grid behind the moon to hint at the app's grid */
+  .grid-hint {
+    position: absolute;
+    inset: 24px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 8px;
+    opacity: 0.18;
+    z-index: 0;
+  }
+  .grid-hint .cell {
+    border-radius: 8px;
+    border: 1px solid var(--dimmer-grey);
+  }
+  .moon { z-index: 1; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="left">
+      <div class="wordmark">SleepSound</div>
+      <div class="tagline">Sleep sounds that won't wake you. AMOLED-true-black, no loops, no ads, no account.</div>
+      <div class="pills">
+        <span class="pill">No subscription</span>
+        <span class="pill">No tracking</span>
+        <span class="pill">11 sounds</span>
+        <span class="pill">$0.99 unlocks</span>
+      </div>
+    </div>
+    <div class="right">
+      <div class="grid-hint">
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      </div>
+      <div class="moon">
+        <div class="outer"></div>
+        <div class="inner"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -11,3 +11,10 @@ enum class SoundTier { FREE, PREMIUM }
  */
 fun SoundId.productId(): String? =
     if (tier == SoundTier.PREMIUM) "sound_${name.lowercase()}" else null
+
+/**
+ * One-shot all-sounds bundle. Registered separately in Play Console at a
+ * discounted price ($3.99 vs 7 x $0.99 = $6.93). Purchasing it unlocks
+ * every premium SoundId.
+ */
+const val BUNDLE_PRODUCT_ID = "bundle_all_sounds"

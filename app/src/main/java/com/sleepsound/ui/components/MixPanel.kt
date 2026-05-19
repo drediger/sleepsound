@@ -36,8 +36,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sleepsound.R
 import com.sleepsound.audio.SoundId
 import com.sleepsound.ui.theme.DimGrey
 import com.sleepsound.ui.theme.DimmerGrey
@@ -124,9 +126,11 @@ private fun MixRow(
                 },
             contentAlignment = Alignment.Center,
         ) {
+            val muteCd = stringResource(R.string.cd_mute_format, id.displayName)
+            val unmuteCd = stringResource(R.string.cd_unmute_format, id.displayName)
             Icon(
                 imageVector = if (isMuted) Icons.Default.VolumeOff else Icons.Default.VolumeUp,
-                contentDescription = if (isMuted) "Unmute ${id.displayName}" else "Mute ${id.displayName}",
+                contentDescription = if (isMuted) unmuteCd else muteCd,
                 tint = if (isMuted) DimmerGrey else IconGrey,
                 modifier = Modifier.size(18.dp),
             )

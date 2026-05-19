@@ -118,13 +118,17 @@ class SleepAudioService : LifecycleService() {
             .onEach { engine.setMasterVolume(it) }
             .launchIn(lifecycleScope)
 
-        // Active sounds × per-layer gains → engine layer gains
+        // Active sounds × per-layer gains × preview fade → engine layer gains.
+        // The preview fade is a transient multiplier (1.0 except while a
+        // premium preview is fading out post-30s) so it doesn't disturb the
+        // user's persisted per-sound volume.
         combine(
             PlaybackController.activeSounds,
             PlaybackController.layerGains,
-        ) { active, gains ->
+            PlaybackController.previewFade,
+        ) { active, gains, fades ->
             SoundId.entries.associateWith { id ->
-                if (id in active) gains[id] ?: 1f else 0f
+                if (id in active) (gains[id] ?: 1f) * (fades[id] ?: 1f) else 0f
             }
         }
             .onEach { effectiveGains ->
@@ -232,7 +236,7 @@ class SleepAudioService : LifecycleService() {
             .setOngoing(true)
             .setSilent(true)
             .addAction(
-                android.R.drawable.ic_menu_close_clear_cancel,
+                R.drawable.ic_notification_stop,
                 getString(R.string.notification_stop),
                 stopIntent,
             )

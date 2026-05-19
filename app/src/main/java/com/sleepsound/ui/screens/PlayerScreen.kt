@@ -29,6 +29,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,15 +45,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sleepsound.PlaybackController
+import com.sleepsound.R
 import com.sleepsound.audio.SoundId
 import com.sleepsound.audio.SoundTier
 import com.sleepsound.billing.BillingManager
 import com.sleepsound.billing.EntitlementStore
+import com.sleepsound.billing.PurchaseResult
 import com.sleepsound.ui.components.IdleDimmer
 import com.sleepsound.ui.components.MixPanel
 import com.sleepsound.ui.components.SettingsBottomSheet
@@ -76,6 +82,24 @@ fun PlayerScreen() {
     val pendingPurchasePrompt by PlaybackController.pendingPurchasePrompt.collectAsState()
     val unlocked by EntitlementStore.unlocked.collectAsState()
     val prices by BillingManager.prices.collectAsState()
+    val lastPurchaseResult by BillingManager.lastResult.collectAsState()
+    val snackbarHost = remember { SnackbarHostState() }
+    val unlockedMsgFmt = stringResource(R.string.snackbar_unlocked)
+    val canceledMsg = stringResource(R.string.snackbar_purchase_canceled)
+    val failedMsg = stringResource(R.string.snackbar_purchase_failed)
+
+    LaunchedEffect(lastPurchaseResult) {
+        val msg = when (val r = lastPurchaseResult) {
+            is PurchaseResult.Success -> unlockedMsgFmt.format(r.id.displayName)
+            PurchaseResult.UserCanceled -> canceledMsg
+            is PurchaseResult.Failure -> failedMsg
+            null -> null
+        }
+        if (msg != null) {
+            snackbarHost.showSnackbar(msg)
+            BillingManager.consumeLastResult()
+        }
+    }
 
     val now by produceState(initialValue = System.currentTimeMillis()) {
         while (true) {
@@ -104,13 +128,20 @@ fun PlayerScreen() {
                 .windowInsetsPadding(WindowInsets.safeDrawing),
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
+                val statusMsg = when {
+                    activeSounds.isEmpty() -> stringResource(R.string.player_tap_a_sound)
+                    isPlaying && activeSounds.size == 1 ->
+                        stringResource(R.string.player_playing_one)
+                    isPlaying -> stringResource(R.string.player_playing_n, activeSounds.size)
+                    else -> stringResource(R.string.player_tap_to_resume)
+                }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp, vertical = 8.dp),
                 ) {
                     Text(
-                        text = statusText(activeSounds.size, isPlaying),
+                        text = statusMsg,
                         color = DimmerGrey,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Light,
@@ -132,7 +163,7 @@ fun PlayerScreen() {
                     ) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
+                            contentDescription = stringResource(R.string.cd_settings),
                             tint = DimmerGrey,
                             modifier = Modifier.size(20.dp),
                         )
@@ -192,6 +223,16 @@ fun PlayerScreen() {
                     }
                 }
             }
+
+            SnackbarHost(
+                hostState = snackbarHost,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 96.dp),
+            ) { data ->
+                Snackbar(
+                    containerColor = SurfaceDark,
+                    contentColor = DimGrey,
+                ) { Text(data.visuals.message, color = DimGrey, fontSize = 14.sp) }
+            }
         }
     }
 
@@ -220,16 +261,10 @@ private fun StopChip(onClick: () -> Unit) {
     ) {
         Icon(
             imageVector = Icons.Default.Stop,
-            contentDescription = "Stop",
+            contentDescription = stringResource(R.string.cd_stop),
             tint = DimGrey,
             modifier = Modifier.size(22.dp),
         )
     }
 }
 
-private fun statusText(activeCount: Int, isPlaying: Boolean): String = when {
-    activeCount == 0 -> "Tap a sound"
-    isPlaying && activeCount == 1 -> "Playing 1 sound"
-    isPlaying -> "Playing $activeCount sounds"
-    else -> "Tap a sound to resume"
-}

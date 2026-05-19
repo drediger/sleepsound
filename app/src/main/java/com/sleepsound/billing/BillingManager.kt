@@ -16,6 +16,7 @@ import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.acknowledgePurchase
 import com.android.billingclient.api.queryProductDetails
 import com.android.billingclient.api.queryPurchasesAsync
+import com.sleepsound.audio.BUNDLE_PRODUCT_ID
 import com.sleepsound.audio.SoundId
 import com.sleepsound.audio.SoundTier
 import com.sleepsound.audio.productId
@@ -57,6 +58,10 @@ object BillingManager {
     /** Localized price strings keyed by SoundId, e.g. mapOf(PINK_NOISE to "$0.99"). */
     private val _prices = MutableStateFlow<Map<SoundId, String>>(emptyMap())
     val prices: StateFlow<Map<SoundId, String>> = _prices.asStateFlow()
+
+    /** Localized price string for the all-sounds bundle ("$3.99"), null when unknown. */
+    private val _bundlePrice = MutableStateFlow<String?>(null)
+    val bundlePrice: StateFlow<String?> = _bundlePrice.asStateFlow()
 
     /** Most recent purchase event for the UI to surface. Cleared by [consumeLastResult]. */
     private val _lastResult = MutableStateFlow<PurchaseResult?>(null)
@@ -135,17 +140,18 @@ object BillingManager {
 
     suspend fun queryProducts() {
         val client = billingClient?.takeIf { it.isReady } ?: return
-        val products = SoundId.entries
+        val productIds = mutableListOf<String>()
+        SoundId.entries
             .filter { it.tier == SoundTier.PREMIUM }
-            .mapNotNull { id ->
-                id.productId()?.let {
-                    QueryProductDetailsParams.Product.newBuilder()
-                        .setProductId(it)
-                        .setProductType(BillingClient.ProductType.INAPP)
-                        .build()
-                }
-            }
-        if (products.isEmpty()) return
+            .mapNotNullTo(productIds) { it.productId() }
+        productIds += BUNDLE_PRODUCT_ID
+
+        val products = productIds.map { id ->
+            QueryProductDetailsParams.Product.newBuilder()
+                .setProductId(id)
+                .setProductType(BillingClient.ProductType.INAPP)
+                .build()
+        }
 
         val params = QueryProductDetailsParams.newBuilder()
             .setProductList(products)
@@ -158,14 +164,20 @@ object BillingManager {
             return
         }
         val priceMap = mutableMapOf<SoundId, String>()
+        var bundle: String? = null
         response.productDetailsList?.forEach { details ->
             productCache[details.productId] = details
-            val id = SoundId.entries.firstOrNull { it.productId() == details.productId } ?: return@forEach
-            details.oneTimePurchaseOfferDetails?.formattedPrice?.let {
-                priceMap[id] = it
+            val formatted = details.oneTimePurchaseOfferDetails?.formattedPrice
+            if (details.productId == BUNDLE_PRODUCT_ID) {
+                bundle = formatted
+                return@forEach
             }
+            val id = SoundId.entries.firstOrNull { it.productId() == details.productId }
+                ?: return@forEach
+            if (formatted != null) priceMap[id] = formatted
         }
         _prices.value = priceMap
+        _bundlePrice.value = bundle
     }
 
     suspend fun queryExistingPurchases() {
@@ -180,11 +192,10 @@ object BillingManager {
             Log.w(TAG, "queryPurchases failed: ${response.billingResult.debugMessage}")
             return
         }
-        val owned = response.purchasesList
+        val purchases = response.purchasesList
             .filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }
-            .flatMap { it.products }
-            .mapNotNull { pid -> SoundId.entries.firstOrNull { it.productId() == pid } }
-            .toSet()
+        val ownedProductIds = purchases.flatMap { it.products }.toSet()
+        val owned = soundIdsFor(ownedProductIds)
         EntitlementStore.setPaidUnlocks(owned)
 
         // Acknowledge any purchases we may have missed.
@@ -194,14 +205,38 @@ object BillingManager {
     }
 
     /**
+     * Maps a set of Play product IDs to the SoundIds they entitle. The bundle
+     * SKU expands to every premium SoundId.
+     */
+    private fun soundIdsFor(productIds: Collection<String>): Set<SoundId> {
+        val result = mutableSetOf<SoundId>()
+        for (pid in productIds) {
+            if (pid == BUNDLE_PRODUCT_ID) {
+                SoundId.entries.filterTo(result) { it.tier == SoundTier.PREMIUM }
+            } else {
+                SoundId.entries.firstOrNull { it.productId() == pid }?.let { result += it }
+            }
+        }
+        return result
+    }
+
+    /**
      * Open the Play purchase sheet for the given premium sound. Returns false
      * if the product is unknown (not yet fetched / not registered in Play
      * Console) so the caller can show an error.
      */
     fun launchPurchaseFlow(activity: Activity, id: SoundId): Boolean {
         if (id.tier == SoundTier.FREE) return false
-        val client = billingClient?.takeIf { it.isReady } ?: return false
         val productId = id.productId() ?: return false
+        return launchPurchaseFlowForProduct(activity, productId)
+    }
+
+    /** Open the Play purchase sheet for the all-sounds bundle SKU. */
+    fun launchBundlePurchaseFlow(activity: Activity): Boolean =
+        launchPurchaseFlowForProduct(activity, BUNDLE_PRODUCT_ID)
+
+    private fun launchPurchaseFlowForProduct(activity: Activity, productId: String): Boolean {
+        val client = billingClient?.takeIf { it.isReady } ?: return false
         val details = productCache[productId] ?: return false
 
         val productParams = listOf(
@@ -237,8 +272,7 @@ object BillingManager {
         if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) return
         val client = billingClient ?: return
 
-        val ids = purchase.products
-            .mapNotNull { pid -> SoundId.entries.firstOrNull { it.productId() == pid } }
+        val ids = soundIdsFor(purchase.products)
         ids.forEach { EntitlementStore.unlock(it) }
 
         if (!purchase.isAcknowledged) {
@@ -252,6 +286,9 @@ object BillingManager {
                 Log.w(TAG, "acknowledge failed: ${ackResult.debugMessage}")
             }
         }
+        // Surface a single result event. The bundle returns multiple ids; we
+        // pick any one to populate Success.id, since the UI just needs
+        // "something" to trigger the snackbar.
         ids.firstOrNull()?.let { _lastResult.value = PurchaseResult.Success(it) }
     }
 }

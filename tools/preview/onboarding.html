@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>SleepSound preview — Onboarding page 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0&family=Inter:wght@200;300;400;500&display=swap"
+  rel="stylesheet">
+<style>
+  :root {
+    --pure-black: #000000;
+    --surface-dark: #111111;
+    --dimmer-grey: #333333;
+    --dim-grey: #666666;
+    --icon-grey: #888888;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--pure-black); color:var(--dim-grey);
+    font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  .device { width:412px; height:915px; position:relative; display:flex; flex-direction:column;
+    padding:24px; }
+  .top { display:flex; justify-content:flex-end; }
+  .skip { color:var(--dimmer-grey); font-size:14px; padding:8px 12px; }
+  .content { flex:1; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; gap:24px; }
+  .material-symbols-outlined { font-family:'Material Symbols Outlined'; font-weight:400;
+    font-size:72px; color:var(--icon-grey); line-height:1; -webkit-font-smoothing:antialiased;
+    font-feature-settings:'liga'; }
+  h1 { color:var(--dim-grey); font-weight:300; font-size:22px; text-align:center;
+    margin:0; max-width:340px; line-height:1.2; }
+  p { color:var(--dimmer-grey); font-size:14px; text-align:center; margin:0;
+    max-width:340px; line-height:1.5; }
+  .primary { background:var(--surface-dark); border:1px solid var(--icon-grey); color:var(--dim-grey);
+    border-radius:24px; padding:12px 24px; font-size:14px; font-weight:500; }
+  .bottom { display:flex; justify-content:space-between; align-items:center; }
+  .dots { display:flex; gap:8px; align-items:center; }
+  .dot { width:6px; height:6px; border-radius:50%; background:var(--dimmer-grey); }
+  .dot.active { width:8px; height:8px; background:var(--icon-grey); }
+</style>
+</head>
+<body>
+  <div class="device">
+    <div class="top">
+      <div class="skip">Skip</div>
+    </div>
+    <div class="content">
+      <span class="material-symbols-outlined">battery_full</span>
+      <h1>Keep audio alive overnight.</h1>
+      <p>Android may stop SleepSound mid-night to save battery. The system dialog
+        asks if you want to exempt the app — choose Allow to keep audio playing
+        until your timer ends.</p>
+      <div class="primary">Open exemption dialog</div>
+    </div>
+    <div class="bottom">
+      <div class="dots">
+        <div class="dot"></div>
+        <div class="dot active"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="primary">Next</div>
+    </div>
+  </div>
+</body>
+</html>

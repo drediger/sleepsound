@@ -42,10 +42,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sleepsound.R
 import com.sleepsound.audio.SoundId
 import com.sleepsound.ui.theme.DimGrey
 import com.sleepsound.ui.theme.DimmerGrey
@@ -126,7 +128,7 @@ fun SoundTile(
             )
             Spacer(modifier = Modifier.height(6.dp))
             if (showBuyPrompt) {
-                BuyPill(price = price ?: "Buy")
+                BuyPill(price = price ?: stringResource(R.string.buy_fallback))
             } else {
                 Text(
                     text = id.displayName,
@@ -156,7 +158,7 @@ fun SoundTile(
 private fun LockBadge(modifier: Modifier = Modifier) {
     Icon(
         imageVector = Icons.Default.Lock,
-        contentDescription = "Premium — tap to preview",
+        contentDescription = stringResource(R.string.cd_locked_tile),
         tint = DimmerGrey,
         modifier = modifier.size(12.dp),
     )

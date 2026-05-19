@@ -31,9 +31,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sleepsound.R
 import com.sleepsound.ui.theme.DimGrey
 import com.sleepsound.ui.theme.DimmerGrey
 import com.sleepsound.ui.theme.IconGrey
@@ -68,7 +70,7 @@ fun TimerSelector(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Timer,
-                    contentDescription = "Timer",
+                    contentDescription = stringResource(R.string.cd_timer),
                     tint = IconGrey,
                     modifier = Modifier.size(16.dp),
                 )
@@ -82,17 +84,19 @@ fun TimerSelector(
             modifier = Modifier.background(SurfaceDark),
         ) {
             DropdownMenuItem(
-                text = { Text("Off", color = DimGrey) },
+                text = { Text(stringResource(R.string.timer_off_label), color = DimGrey) },
                 onClick = { onSelect(null); expanded = false },
             )
             listOf(15, 30, 60, 90).forEach { m ->
                 DropdownMenuItem(
-                    text = { Text("$m minutes", color = DimGrey) },
+                    text = {
+                        Text(stringResource(R.string.timer_n_minutes, m), color = DimGrey)
+                    },
                     onClick = { onSelect(m); expanded = false },
                 )
             }
             DropdownMenuItem(
-                text = { Text("Custom…", color = DimGrey) },
+                text = { Text(stringResource(R.string.timer_custom), color = DimGrey) },
                 onClick = {
                     expanded = false
                     showCustomDialog = true
@@ -128,14 +132,16 @@ private fun CustomMinutesDialog(
         containerColor = SurfaceDark,
         titleContentColor = DimGrey,
         textContentColor = DimGrey,
-        title = { Text("Custom timer", color = DimGrey) },
+        title = { Text(stringResource(R.string.timer_custom_title), color = DimGrey) },
         text = {
             OutlinedTextField(
                 value = text,
                 onValueChange = { v -> if (v.length <= 4 && v.all { it.isDigit() }) text = v },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                label = { Text("Minutes (1–$MAX_CUSTOM_MINUTES)") },
+                label = {
+                    Text(stringResource(R.string.timer_custom_hint, MAX_CUSTOM_MINUTES))
+                },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = DimGrey,
                     unfocusedTextColor = DimGrey,
@@ -151,10 +157,17 @@ private fun CustomMinutesDialog(
             TextButton(
                 onClick = { parsed?.let { onConfirm(it.coerceIn(1, MAX_CUSTOM_MINUTES)) } },
                 enabled = valid,
-            ) { Text("Set", color = if (valid) IconGrey else DimmerGrey) }
+            ) {
+                Text(
+                    stringResource(R.string.action_set),
+                    color = if (valid) IconGrey else DimmerGrey,
+                )
+            }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel", color = DimGrey) }
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.action_cancel), color = DimGrey)
+            }
         },
     )
 }
@@ -174,10 +187,13 @@ private fun timerLabel(minutes: Int?, expiryMs: Long?): String {
             delay(500)
         }
     }
+    val offText = stringResource(R.string.timer_status_off)
+    val endingText = stringResource(R.string.timer_status_ending)
+    val pendingText = minutes?.let { stringResource(R.string.timer_status_pending, it) } ?: ""
     return when {
-        minutes == null -> "Timer off"
-        expiryMs == null -> "Timer ${minutes}m"
-        remainingMs <= 0 -> "Ending…"
+        minutes == null -> offText
+        expiryMs == null -> pendingText
+        remainingMs <= 0 -> endingText
         else -> "%d:%02d".format(Locale.US, remainingMs / 60_000, (remainingMs / 1000) % 60)
     }
 }

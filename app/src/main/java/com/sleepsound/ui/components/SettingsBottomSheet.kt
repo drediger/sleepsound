@@ -26,6 +26,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,9 +39,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.app.Activity
 import com.sleepsound.BuildConfig
 import com.sleepsound.R
+import com.sleepsound.audio.SoundId
+import com.sleepsound.audio.SoundTier
 import com.sleepsound.billing.BillingManager
+import com.sleepsound.billing.EntitlementStore
 import com.sleepsound.ui.theme.DimGrey
 import com.sleepsound.ui.theme.DimmerGrey
 import com.sleepsound.ui.theme.IconGrey
@@ -56,10 +61,26 @@ fun SettingsBottomSheet(
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
+    val activity = context as? Activity
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val privacyUrl = stringResource(R.string.privacy_policy_url)
     val coroutineScope = rememberCoroutineScope()
     var restoreStatus by remember { mutableStateOf<String?>(null) }
+    val bundlePrice by BillingManager.bundlePrice.collectAsState()
+    val unlocked by EntitlementStore.unlocked.collectAsState()
+    val allPremiumUnlocked = SoundId.entries
+        .filter { it.tier == SoundTier.PREMIUM }
+        .all { it in unlocked }
+
+    val manufacturer = Build.MANUFACTURER.replaceFirstChar { it.uppercase() }
+    val oemTitle = stringResource(R.string.settings_oem_title_format, manufacturer)
+    val bundleLoadingText = stringResource(R.string.settings_bundle_loading)
+    val bundleSubtitleFmt = stringResource(R.string.settings_bundle_subtitle_format)
+    val restoreDefault = stringResource(R.string.settings_restore_subtitle)
+    val restoreInProgress = stringResource(R.string.restore_in_progress)
+    val restoreNoneText = stringResource(R.string.restore_none)
+    val restoreOneText = stringResource(R.string.restore_one)
+    val restoreNFmt = stringResource(R.string.restore_n)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -68,39 +89,49 @@ fun SettingsBottomSheet(
         contentColor = DimGrey,
     ) {
         Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
-            SectionHeader(text = "Reliability")
+            SectionHeader(text = stringResource(R.string.settings_section_reliability))
             SettingRow(
-                title = "Allow background playback",
-                subtitle = "Prevents Android from killing audio overnight",
+                title = stringResource(R.string.settings_battery_title),
+                subtitle = stringResource(R.string.settings_battery_subtitle),
                 onClick = { requestIgnoreBatteryOptimizations(context) },
             )
             SettingRow(
-                title = "${Build.MANUFACTURER.replaceFirstChar { it.uppercase() }} settings",
-                subtitle = "Open dontkillmyapp.com for your phone",
+                title = oemTitle,
+                subtitle = stringResource(R.string.settings_oem_subtitle),
                 onClick = { openOemInstructions(context) },
             )
             SettingToggle(
-                title = "Resume on reboot",
-                subtitle = "Auto-start last mix when your phone restarts",
+                title = stringResource(R.string.settings_resume_title),
+                subtitle = stringResource(R.string.settings_resume_subtitle),
                 checked = resumeOnReboot,
                 onChange = onResumeOnRebootChange,
             )
 
             SectionDivider()
 
-            SectionHeader(text = "Purchases")
+            SectionHeader(text = stringResource(R.string.settings_section_purchases))
+            if (!allPremiumUnlocked) {
+                SettingRow(
+                    title = stringResource(R.string.settings_bundle_title),
+                    subtitle = bundlePrice?.let { bundleSubtitleFmt.format(it) }
+                        ?: bundleLoadingText,
+                    onClick = {
+                        activity?.let { BillingManager.launchBundlePurchaseFlow(it) }
+                    },
+                )
+            }
             SettingRow(
-                title = "Restore purchases",
-                subtitle = restoreStatus ?: "Restore premium unlocks from your Google account",
+                title = stringResource(R.string.settings_restore_title),
+                subtitle = restoreStatus ?: restoreDefault,
                 onClick = {
-                    restoreStatus = "Restoring…"
+                    restoreStatus = restoreInProgress
                     coroutineScope.launch {
                         val result = BillingManager.restorePurchases()
                         restoreStatus = when {
                             result.error != null -> result.error
-                            result.restoredCount == 0 -> "Nothing to restore"
-                            result.restoredCount == 1 -> "Restored 1 sound"
-                            else -> "Restored ${result.restoredCount} sounds"
+                            result.restoredCount == 0 -> restoreNoneText
+                            result.restoredCount == 1 -> restoreOneText
+                            else -> restoreNFmt.format(result.restoredCount)
                         }
                     }
                 },

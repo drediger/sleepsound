@@ -96,7 +96,7 @@ Sleep tracking, social, meditation content, accounts, cloud sync, telemetry beyo
 
 ## 4. Technical Architecture
 
-> **Implementation-status note (2026-05-19).** Section 4 below is the *original* architecture plan. The actual v0.5.0 code in this repo intentionally diverged on several lines — the divergences are simpler, not regressions, and are listed in the table below. Re-evaluate before scaling up the codebase.
+> **Implementation-status note (2026-05-19).** Section 4 below is the *original* architecture plan. The actual code in this repo (now at **v1.0.0-rc1**) intentionally diverged on several lines — the divergences are simpler, not regressions, and are listed in the table below. Re-evaluate before scaling up the codebase.
 
 ### Tech stack — planned vs actual
 

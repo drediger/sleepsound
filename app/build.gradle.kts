@@ -1,8 +1,29 @@
+import java.io.File
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
+
+// Release signing config is read from ~/.gradle/gradle.properties or env vars.
+// All four properties must be set to enable release signing; otherwise the
+// release build falls back to debug signing (so local builds still work)
+// and a warning prints. Play Console rejects debug-signed AABs.
+fun releaseSigningSource(name: String): String? =
+    (project.findProperty(name) as String?)
+        ?: System.getenv(name)
+val releaseKeystorePath = releaseSigningSource("SLEEPSOUND_KEYSTORE_PATH")
+val releaseKeystorePassword = releaseSigningSource("SLEEPSOUND_KEYSTORE_PASSWORD")
+val releaseKeyAlias = releaseSigningSource("SLEEPSOUND_KEY_ALIAS")
+val releaseKeyPassword = releaseSigningSource("SLEEPSOUND_KEY_PASSWORD")
+val hasReleaseSigning = listOf(
+    releaseKeystorePath,
+    releaseKeystorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword,
+).all { !it.isNullOrBlank() } &&
+    releaseKeystorePath?.let { File(it).exists() } == true
 
 android {
     namespace = "com.sleepsound"
@@ -12,11 +33,22 @@ android {
         applicationId = "com.sleepsound"
         minSdk = 29
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.5.0"
+        versionCode = 2
+        versionName = "1.0.0-rc1"
 
         vectorDrawables {
             useSupportLibrary = true
+        }
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(releaseKeystorePath!!)
+                storePassword = releaseKeystorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
         }
     }
 
@@ -29,9 +61,18 @@ android {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasReleaseSigning) {
+                signingConfigs.getByName("release")
+            } else {
+                logger.warn(
+                    "SleepSound: release signing properties not set; " +
+                        "falling back to debug signing. Play Console will reject this AAB. " +
+                        "See BUILDING.md §4.",
+                )
+                signingConfigs.getByName("debug")
+            }
         }
     }
 

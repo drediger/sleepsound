@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">SleepSound</string>
 
+    <!-- Notification channel + content -->
     <string name="notification_channel_name">Sleep audio</string>
     <string name="notification_channel_desc">Ongoing playback controls</string>
     <string name="notification_idle">Idle</string>
@@ -8,14 +9,79 @@
     <string name="notification_playing_n">Playing %1$d sounds</string>
     <string name="notification_stop">Stop</string>
 
-    <string name="tap_a_sound">Tap a sound</string>
-    <string name="tap_to_resume">Tap a sound to resume</string>
+    <!-- Player screen status header -->
+    <string name="player_tap_a_sound">Tap a sound</string>
+    <string name="player_tap_to_resume">Tap a sound to resume</string>
+    <string name="player_playing_one">Playing 1 sound</string>
+    <string name="player_playing_n">Playing %1$d sounds</string>
+    <!-- For backwards-compat with older strings -->
+    <string name="tap_a_sound">@string/player_tap_a_sound</string>
+    <string name="tap_to_resume">@string/player_tap_to_resume</string>
 
-    <!-- About / store-facing copy. Update privacy_policy_url before launch. -->
+    <!-- Player content descriptions -->
+    <string name="cd_settings">Settings</string>
+    <string name="cd_stop">Stop playback</string>
+    <string name="cd_timer">Sleep timer</string>
+    <string name="cd_locked_tile">Premium — tap to preview</string>
+    <string name="cd_mute_format">Mute %1$s</string>
+    <string name="cd_unmute_format">Unmute %1$s</string>
+
+    <!-- Purchase snackbar -->
+    <string name="snackbar_unlocked">%1$s unlocked</string>
+    <string name="snackbar_purchase_canceled">Purchase canceled</string>
+    <string name="snackbar_purchase_failed">Purchase failed — try again</string>
+    <string name="buy_fallback">Buy</string>
+
+    <!-- Timer selector + custom dialog -->
+    <string name="timer_off_label">Off</string>
+    <string name="timer_n_minutes">%1$d minutes</string>
+    <string name="timer_custom">Custom…</string>
+    <string name="timer_status_off">Timer off</string>
+    <string name="timer_status_pending">Timer %1$dm</string>
+    <string name="timer_status_ending">Ending…</string>
+    <string name="timer_custom_title">Custom timer</string>
+    <string name="timer_custom_hint">Minutes (1–%1$d)</string>
+    <string name="action_set">Set</string>
+    <string name="action_cancel">Cancel</string>
+
+    <!-- Settings sheet sections -->
+    <string name="settings_section_reliability">Reliability</string>
+    <string name="settings_section_purchases">Purchases</string>
+    <string name="settings_battery_title">Allow background playback</string>
+    <string name="settings_battery_subtitle">Prevents Android from killing audio overnight</string>
+    <string name="settings_oem_title_format">%1$s settings</string>
+    <string name="settings_oem_subtitle">Open dontkillmyapp.com for your phone</string>
+    <string name="settings_resume_title">Resume on reboot</string>
+    <string name="settings_resume_subtitle">Auto-start last mix when your phone restarts</string>
+    <string name="settings_bundle_title">Unlock all sounds</string>
+    <string name="settings_bundle_subtitle_format">%1$s — every premium sound in one purchase</string>
+    <string name="settings_bundle_loading">Bundle price loading…</string>
+    <string name="settings_restore_title">Restore purchases</string>
+    <string name="settings_restore_subtitle">Restore premium unlocks from your Google account</string>
+    <string name="restore_in_progress">Restoring…</string>
+    <string name="restore_none">Nothing to restore</string>
+    <string name="restore_one">Restored 1 sound</string>
+    <string name="restore_n">Restored %1$d sounds</string>
+    <string name="restore_error_no_billing">Play Billing not available</string>
+
+    <!-- About section (existing) -->
     <string name="about_title">About</string>
     <string name="about_promise">No ads. No account. No subscription. No loops. No tracking.</string>
     <string name="about_version">Version %1$s</string>
     <string name="about_privacy">Privacy policy</string>
     <string name="about_oss">Open-source licenses</string>
     <string name="privacy_policy_url">https://example.com/sleepsound/privacy</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_done">Done</string>
+    <string name="onboarding_p1_title">Sleep sound, on your terms.</string>
+    <string name="onboarding_p1_body">No ads. No account. No subscription. No loops. No tracking. Four free sounds out of the box: brown noise, white noise, rain, and ocean.</string>
+    <string name="onboarding_p2_title">Keep audio alive overnight.</string>
+    <string name="onboarding_p2_body">Android may stop SleepSound mid-night to save battery. The system dialog asks if you want to exempt the app — choose Allow to keep audio playing until your timer ends.</string>
+    <string name="onboarding_p2_action">Open exemption dialog</string>
+    <string name="onboarding_p3_title">Your phone may need an extra step.</string>
+    <string name="onboarding_p3_body">Samsung, Xiaomi, OnePlus, Huawei, and a few others ship an extra background-kill layer that ignores Android\'s settings. The page below tells you the one toggle for your phone.</string>
+    <string name="onboarding_p3_action">Open guide for this phone</string>
 </resources>

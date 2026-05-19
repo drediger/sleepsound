@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 private const val PREVIEW_DURATION_MS = 30_000L
+private const val PREVIEW_FADE_MS = 5_000L
+private const val PREVIEW_TICK_MS = 100L
 
 /**
  * Process-wide singleton state for the player. UI writes here; the service
@@ -65,6 +67,14 @@ object PlaybackController {
     private val _previewExpiry = MutableStateFlow<Map<SoundId, Long>>(emptyMap())
     val previewExpiry: StateFlow<Map<SoundId, Long>> = _previewExpiry.asStateFlow()
 
+    /**
+     * Per-sound transient gain multiplier in [0, 1]. Set to a value < 1 only
+     * while a preview is fading out; the service multiplies through. Not
+     * persisted across launches.
+     */
+    private val _previewFade = MutableStateFlow<Map<SoundId, Float>>(emptyMap())
+    val previewFade: StateFlow<Map<SoundId, Float>> = _previewFade.asStateFlow()
+
     /** Most recently expired preview — UI can surface a Buy CTA. */
     private val _pendingPurchasePrompt = MutableStateFlow<SoundId?>(null)
     val pendingPurchasePrompt: StateFlow<SoundId?> = _pendingPurchasePrompt.asStateFlow()
@@ -97,11 +107,30 @@ object PlaybackController {
             while (true) {
                 val now = System.currentTimeMillis()
                 val expiries = _previewExpiry.value
-                val expired = expiries.filterValues { it <= now }.keys
-                if (expired.isNotEmpty()) {
-                    expired.forEach { onPreviewExpired(it) }
+                if (expiries.isNotEmpty()) {
+                    val newFades = _previewFade.value.toMutableMap()
+                    val toFinalize = mutableListOf<SoundId>()
+                    for ((id, deadline) in expiries) {
+                        val elapsedAfterDeadline = now - deadline
+                        when {
+                            elapsedAfterDeadline < 0 -> {
+                                // Still in the free-trial window — no fade.
+                                if (newFades[id] != 1f) newFades[id] = 1f
+                            }
+                            elapsedAfterDeadline < PREVIEW_FADE_MS -> {
+                                val ratio = elapsedAfterDeadline.toFloat() / PREVIEW_FADE_MS
+                                newFades[id] = (1f - ratio).coerceIn(0f, 1f)
+                            }
+                            else -> {
+                                newFades.remove(id)
+                                toFinalize += id
+                            }
+                        }
+                    }
+                    if (newFades != _previewFade.value) _previewFade.value = newFades
+                    toFinalize.forEach { onPreviewFadeComplete(it) }
                 }
-                delay(500)
+                delay(PREVIEW_TICK_MS)
             }
         }
     }
@@ -116,15 +145,18 @@ object PlaybackController {
         }
     }
 
-    private fun onPreviewExpired(id: SoundId) {
-        // Snapshot context first — we need it for stopPlayback if the last
-        // active sound was a preview.
+    /**
+     * Called when a preview's fade-out has completed (5 s after the 30 s
+     * free-trial deadline). Removes the sound from the active set and
+     * surfaces a Buy CTA. The pre-expiry watcher tick handles the fade
+     * itself via [_previewFade].
+     */
+    private fun onPreviewFadeComplete(id: SoundId) {
         _previewExpiry.value = _previewExpiry.value - id
         _activeSounds.value = _activeSounds.value - id
         persistActive(_activeSounds.value)
         _pendingPurchasePrompt.value = id
         if (_activeSounds.value.isEmpty() && _isPlaying.value) {
-            // Service receives the empty active-sounds flow and stops itself.
             _isPlaying.value = false
             _timerExpiryMs.value = null
         }
@@ -149,6 +181,7 @@ object PlaybackController {
                 (id to System.currentTimeMillis() + PREVIEW_DURATION_MS)
         } else if (!turningOn) {
             _previewExpiry.value = _previewExpiry.value - id
+            _previewFade.value = _previewFade.value - id
         }
 
         when {
@@ -184,6 +217,7 @@ object PlaybackController {
     fun clearAll(context: Context) {
         _activeSounds.value = emptySet()
         _previewExpiry.value = emptyMap()
+        _previewFade.value = emptyMap()
         persistActive(emptySet())
         if (_isPlaying.value) stopPlayback(context)
     }
@@ -237,6 +271,7 @@ object PlaybackController {
         _timerMinutes.value = null
         _timerExpiryMs.value = null
         _previewExpiry.value = emptyMap()
+        _previewFade.value = emptyMap()
     }
 
     private fun persistActive(sounds: Set<SoundId>) {
