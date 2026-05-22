@@ -64,17 +64,22 @@ Once the user's phone is connected via USB with USB debugging on:
 ```bash
 ./gradlew :app:assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb shell am force-stop com.sleepsound.debug   # optional, ensures clean state
-adb shell am start -n com.sleepsound.debug/com.sleepsound.MainActivity
+adb shell am force-stop io.github.drediger.sleepsoundly.debug   # optional, ensures clean state
+adb shell am start -n io.github.drediger.sleepsoundly.debug/com.sleepsound.MainActivity
 adb exec-out screencap -p > /tmp/sleepsound.png   # read the image with the Read tool
 ```
 
 Notes:
-- The **debug package ID** is `com.sleepsound.debug` (the `.debug` suffix
+- The **debug package ID** is `io.github.drediger.sleepsoundly.debug` (the `.debug` suffix
   comes from `applicationIdSuffix` in the debug build type).
-- The **release package ID** is `com.sleepsound` — they coexist on a
+- The **release package ID** is `io.github.drediger.sleepsoundly` — they coexist on a
   device.
-- `adb shell pm clear com.sleepsound.debug` wipes ALL app state
+- The **Kotlin namespace** (where source files actually live) is still
+  `com.sleepsound`, by design — `applicationId` was renamed for Play
+  Console without refactoring every `package com.sleepsound.*`
+  declaration. So launcher class is `com.sleepsound.MainActivity` but
+  the installed app is `io.github.drediger.sleepsoundly[.debug]`.
+- `adb shell pm clear io.github.drediger.sleepsoundly.debug` wipes ALL app state
   (onboarding flag, persisted active sounds, per-sound layer gains,
   entitlements). Useful for verifying first-run behavior; cruel if the
   user has gone through onboarding and you blow it away.
@@ -86,11 +91,11 @@ Notes:
 | Want to see | Command |
 |---|---|
 | Current screen | `adb exec-out screencap -p > /tmp/x.png`, then Read tool |
-| Persisted prefs | `adb shell run-as com.sleepsound.debug cat /data/data/com.sleepsound.debug/shared_prefs/playback_state.xml` |
+| Persisted prefs | `adb shell run-as io.github.drediger.sleepsoundly.debug cat /data/data/io.github.drediger.sleepsoundly.debug/shared_prefs/playback_state.xml` |
 | Entitlement prefs | Same path but `shared_prefs/entitlements.xml` |
 | Logs (focus + media) | `adb logcat -d -t 200 \| grep -iE "AudioTrack\|MediaFocusControl\|MediaSession\|sleepsound\|SampleSource"` |
 | Audio focus stack | `adb shell dumpsys audio \| grep -A 8 "Audio Focus"` |
-| Active app pid | `adb shell pidof com.sleepsound.debug` |
+| Active app pid | `adb shell pidof io.github.drediger.sleepsoundly.debug` |
 
 ---
 

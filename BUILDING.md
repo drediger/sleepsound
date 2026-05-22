@@ -66,7 +66,7 @@ Android Studio once and let it produce them.
 ./gradlew :app:testDebugUnitTest  # JVM unit tests (procedural audio + SoundId)
 ```
 
-Debug builds use the application ID `com.sleepsound.debug` so they can
+Debug builds use the application ID `io.github.drediger.sleepsoundly.debug` so they can
 be installed alongside a production install.
 
 The unit-test suite is JVM-only (no instrumented Android tests yet) —
@@ -136,7 +136,7 @@ integrity.
 
 ```bash
 ./gradlew :app:installDebug
-adb shell am start -n com.sleepsound.debug/com.sleepsound.MainActivity
+adb shell am start -n io.github.drediger.sleepsoundly.debug/com.sleepsound.MainActivity
 ```
 
 For audio-reliability testing (the load-bearing claim — overnight

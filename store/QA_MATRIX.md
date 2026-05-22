@@ -126,8 +126,8 @@ false.
 3. Toggle every feature: pick sounds, change volume, set timer,
    open Settings, tap privacy link.
 4. **Expect:** zero outbound HTTPS connections from
-   `com.sleepsound`. The Play Billing flow's connections go through
-   the Play Services process, not our package.
+   `io.github.drediger.sleepsoundly`. The Play Billing flow's
+   connections go through the Play Services process, not our package.
 5. Verify the `INTERNET` permission is *not* declared in
    `AndroidManifest.xml` (it isn't, but re-confirm before release).
 

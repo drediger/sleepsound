@@ -30,7 +30,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.sleepsound"
+        applicationId = "io.github.drediger.sleepsoundly"
         minSdk = 29
         targetSdk = 35
         versionCode = 2

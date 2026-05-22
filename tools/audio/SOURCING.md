@@ -174,7 +174,7 @@ ffmpeg -i source.wav -filter_complex \
 cp /path/to/rain.ogg app/src/main/assets/sounds/rain.ogg
 ./gradlew :app:assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -n com.sleepsound.debug/com.sleepsound.MainActivity
+adb shell am start -n io.github.drediger.sleepsoundly.debug/com.sleepsound.MainActivity
 ```
 
 Tap Rain on the phone — `SoundCatalog.create` will pick up
