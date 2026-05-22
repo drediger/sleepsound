@@ -71,6 +71,14 @@ class SleepAudioService : LifecycleService() {
     private fun handleStart() {
         val activeCount = PlaybackController.activeSounds.value.size
         Log.d(TAG, "handleStart: activeCount=$activeCount")
+        if (activeCount == 0) {
+            // Defensive: OEMs that restart the service with a null intent
+            // (or a stale START while prefs haven't loaded) shouldn't end up
+            // holding audio focus + foreground + wakelock with nothing to
+            // play. Treat empty-active as an implicit stop.
+            handleStop("emptyOnStart")
+            return
+        }
         mediaSession.setPlaying(activeCount)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(

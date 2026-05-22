@@ -14,9 +14,6 @@
     <string name="player_tap_to_resume">Tap a sound to resume</string>
     <string name="player_playing_one">Playing 1 sound</string>
     <string name="player_playing_n">Playing %1$d sounds</string>
-    <!-- For backwards-compat with older strings -->
-    <string name="tap_a_sound">@string/player_tap_a_sound</string>
-    <string name="tap_to_resume">@string/player_tap_to_resume</string>
 
     <!-- Player content descriptions -->
     <string name="cd_settings">Settings</string>

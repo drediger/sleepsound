@@ -162,8 +162,10 @@ private fun SectionHeader(text: String) {
 
 @Composable
 private fun SectionDivider() {
+    // DimmerGrey #333 on SurfaceDark #111 is ~2:1 — intentionally subtle but
+    // visible. PureBlack on SurfaceDark was effectively invisible (1.59:1).
     Box(modifier = Modifier.padding(vertical = 12.dp)) {
-        HorizontalDivider(color = PureBlack, thickness = 1.dp)
+        HorizontalDivider(color = DimmerGrey, thickness = 1.dp)
     }
 }
 
@@ -171,7 +173,7 @@ private fun SectionDivider() {
 private fun PromiseLine(text: String) {
     Text(
         text = text,
-        color = DimmerGrey,
+        color = DimGrey,
         fontSize = 12.sp,
         modifier = Modifier.padding(vertical = 4.dp),
     )
@@ -181,7 +183,7 @@ private fun PromiseLine(text: String) {
 private fun VersionLine(text: String) {
     Text(
         text = text,
-        color = DimmerGrey,
+        color = DimGrey,
         fontSize = 11.sp,
         modifier = Modifier.padding(top = 12.dp),
     )
@@ -198,12 +200,12 @@ private fun SettingRow(title: String, subtitle: String, onClick: () -> Unit) {
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(title, color = DimGrey, fontSize = 14.sp)
-            Text(subtitle, color = DimmerGrey, fontSize = 11.sp, maxLines = 1)
+            Text(subtitle, color = DimGrey, fontSize = 11.sp, maxLines = 1)
         }
         Icon(
             imageVector = Icons.Default.ChevronRight,
             contentDescription = null,
-            tint = DimmerGrey,
+            tint = DimGrey,
         )
     }
 }
@@ -223,7 +225,7 @@ private fun SettingToggle(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(title, color = DimGrey, fontSize = 14.sp)
-            Text(subtitle, color = DimmerGrey, fontSize = 11.sp)
+            Text(subtitle, color = DimGrey, fontSize = 11.sp)
         }
         Switch(
             checked = checked,

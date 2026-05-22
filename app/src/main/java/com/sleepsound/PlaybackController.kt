@@ -37,6 +37,15 @@ object PlaybackController {
     private const val KEY_MASTER_VOLUME = "master_volume"
     private const val KEY_LAYER_GAIN_PREFIX = "layer_gain_"
     private const val KEY_RESUME_ON_REBOOT = "resume_on_reboot"
+    private const val KEY_LAST_STOP_AT_MS = "last_stop_at_ms"
+
+    /**
+     * Wall-clock time of the most recent stop, used by [BootReceiver] to gate
+     * resume-on-reboot. Without this, a phone reboot at 10am (battery swap,
+     * OS update) would replay last night's bedtime mix during the day.
+     */
+    val lastStopAtMs: Long
+        get() = prefs?.getLong(KEY_LAST_STOP_AT_MS, 0L) ?: 0L
 
     private var prefs: SharedPreferences? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -241,6 +250,7 @@ object PlaybackController {
     fun stopPlayback(context: Context) {
         _isPlaying.value = false
         _timerExpiryMs.value = null
+        prefs?.edit()?.putLong(KEY_LAST_STOP_AT_MS, System.currentTimeMillis())?.apply()
         val intent = Intent(context, SleepAudioService::class.java).apply {
             action = SleepAudioService.ACTION_STOP
         }
@@ -272,6 +282,7 @@ object PlaybackController {
         _timerExpiryMs.value = null
         _previewExpiry.value = emptyMap()
         _previewFade.value = emptyMap()
+        prefs?.edit()?.putLong(KEY_LAST_STOP_AT_MS, System.currentTimeMillis())?.apply()
     }
 
     private fun persistActive(sounds: Set<SoundId>) {

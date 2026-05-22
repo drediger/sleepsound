@@ -10,16 +10,18 @@
 
 Sleep Soundly is positioned against the subscription-app pattern (Calm,
 BetterSleep, Headspace) on the Play Store. The full positioning and
-five-pillar promise live in [`PLAN.md`](./PLAN.md) §1, with the public
-store copy in [`store/STORE_LISTING.md`](./store/STORE_LISTING.md).
+four-pillar promise (no ads / no account / no subscription / no
+tracking) live in [`PLAN.md`](./PLAN.md) §1, with the public store
+copy in [`store/STORE_LISTING.md`](./store/STORE_LISTING.md).
 
 **Headline differences:**
-- 11 procedurally-generated sounds (no looped clips)
+- 10 sounds — 4 procedural noise/texture generators + 6 CC0 nature
+  recordings (looped seamlessly via streaming MediaCodec)
 - True AMOLED-black Compose UI, auto-dims after 30 s idle
 - Foreground media-playback service hardened for overnight survival
   (Doze + audio-focus + BecomingNoisy + MediaSession + wake lock)
 - Zero data collection (no `INTERNET` permission, no analytics SDKs)
-- Free tier: 4 sounds. Premium: 7 sounds @ $0.99 each, or all-in
+- Free tier: 4 sounds. Premium: 6 sounds @ $0.99 each, or all-in
   bundle at $3.99. 30-second live preview before purchase.
 
 ## Repo layout

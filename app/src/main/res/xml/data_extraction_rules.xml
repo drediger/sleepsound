@@ -2,8 +2,15 @@
 <data-extraction-rules>
     <cloud-backup>
         <include domain="sharedpref" path="." />
+        <!--
+            Premium entitlements are the source-of-truth in Play Billing, not
+            here. Re-acquiring via restorePurchases() on a restored device is
+            preferable to silently bringing back a possibly-stale local cache.
+        -->
+        <exclude domain="sharedpref" path="entitlements.xml" />
     </cloud-backup>
     <device-transfer>
         <include domain="sharedpref" path="." />
+        <exclude domain="sharedpref" path="entitlements.xml" />
     </device-transfer>
 </data-extraction-rules>

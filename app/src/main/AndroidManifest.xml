@@ -9,6 +9,16 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
+    <!--
+        Strip permissions that Play Billing's transport-backend-cct transitive
+        dep auto-merges into our manifest. We never invoke its event pipeline,
+        and the privacy policy / store listing both promise no INTERNET. The
+        Billing IPC itself runs in Google Play's process and does not require
+        these permissions to be declared in our manifest.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -23,6 +33,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.SleepSoundly">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
