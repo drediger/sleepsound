@@ -33,7 +33,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BatteryFull
-import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -50,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -111,7 +111,10 @@ fun OnboardingCarousel(onComplete: () -> Unit) {
                     Icon(
                         imageVector = current.icon,
                         contentDescription = null,
-                        tint = IconGrey,
+                        // Brand moonlight — SoftWhite vs the dimmer IconGrey
+                        // used in the rest of the chrome, since this is the
+                        // first thing the user sees on launch.
+                        tint = SoftWhite,
                         modifier = Modifier.size(72.dp),
                     )
                     Spacer(modifier = Modifier.height(32.dp))
@@ -233,7 +236,12 @@ private fun TextButton(text: String, onClick: () -> Unit) {
 private fun DotIndicator(count: Int, current: Int) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         repeat(count) { i ->
-            val color = if (i == current) IconGrey else DimmerGrey
+            // Inactive dot was DimmerGrey #2D3548 on PureBlack ~1.5:1 —
+            // below WCAG 3:1 for graphical components, essentially invisible
+            // in dim rooms. DimGrey #A8B0C0 (the cool-moonlight color) lands
+            // ~8.5:1 — clearly visible while still subordinate to the
+            // SoftWhite active dot.
+            val color = if (i == current) SoftWhite else DimGrey
             Box(
                 modifier = Modifier
                     .size(if (i == current) 8.dp else 6.dp)
@@ -282,7 +290,11 @@ private fun onboardingPages(): List<OnboardingPage> {
 
     return listOf(
         OnboardingPage(
-            icon = Icons.Default.Bedtime,
+            // Brand crescent moon (same vector as the notification small
+            // icon), not the stock Material Bedtime icon — the launcher is
+            // a crescent, the notification is a crescent, onboarding should
+            // be a crescent too.
+            icon = ImageVector.vectorResource(R.drawable.ic_notification_moon),
             title = stringResource(R.string.onboarding_p1_title),
             body = stringResource(R.string.onboarding_p1_body),
             action = null,

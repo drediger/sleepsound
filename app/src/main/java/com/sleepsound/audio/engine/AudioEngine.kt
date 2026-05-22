@@ -25,7 +25,12 @@ private const val MASTER_FADE_MS = 1500L
 // Safety net: if AudioTrack.write blocks (disconnected headphones, sink
 // stall), force-cancel the render loop so the stop() callback can't hang.
 private const val FADE_TIMEOUT_MS = 3_000L
-private const val WAKE_LOCK_TIMEOUT_MS = 10L * 60L * 60L * 1000L  // 10 hours safety net
+// 13 hours: must exceed the maximum custom timer (12 h, from
+// TimerSelector.MAX_CUSTOM_MINUTES = 720) plus headroom so the wake-lock
+// doesn't release before the user's configured sleep audio ends. At 13 h
+// the wake-lock is still a safety net — render loop bails on its own when
+// targetGain == 0 or the timer expires.
+private const val WAKE_LOCK_TIMEOUT_MS = 13L * 60L * 60L * 1000L
 
 /**
  * Owns the AudioTrack pipeline and a [LayerMixer]. Applies equal-power master
@@ -47,7 +52,6 @@ class AudioEngine(
 
     @Volatile private var targetGain = 0f
     @Volatile private var currentGain = 0f
-    @Volatile private var masterVolume = 1f
     @Volatile private var ducked = false
     // Bumps on every start()/stop() — pending stop watchdogs use it to detect
     // they've been superseded by a new start and bow out gracefully instead
@@ -63,10 +67,6 @@ class AudioEngine(
 
     fun setLayerGain(id: SoundId, gain: Float) {
         mixer.setGain(id, gain)
-    }
-
-    fun setMasterVolume(volume: Float) {
-        masterVolume = volume.coerceIn(0f, 1f)
     }
 
     fun setDucked(duck: Boolean) {
@@ -126,7 +126,7 @@ class AudioEngine(
                         g > targetGain -> maxOf(g - fadeRate, targetGain)
                         else -> g
                     }
-                    val curve = sin(g.toDouble() * PI / 2.0).toFloat() * masterVolume
+                    val curve = sin(g.toDouble() * PI / 2.0).toFloat()
                     buf[i * 2] = (buf[i * 2].toFloat() * curve)
                         .toInt().coerceIn(SHORT_MIN, SHORT_MAX).toShort()
                     buf[i * 2 + 1] = (buf[i * 2 + 1].toFloat() * curve)

@@ -1,7 +1,6 @@
 package com.sleepsound.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.expandVertically
@@ -14,10 +13,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
@@ -58,11 +60,16 @@ fun MixPanel(
     onGainChange: (SoundId, Float) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Cap MixPanel height so the sound grid above never gets squeezed
+    // below ~3 rows even when 6+ sounds are mixed. Rows beyond the cap
+    // scroll vertically within the panel; AnimatedVisibility still
+    // handles per-row enter/exit transitions inside the scroll viewport.
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .animateContentSize(),
+            .heightIn(max = 220.dp)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
         SoundId.entries.forEach { id ->
             AnimatedVisibility(
@@ -115,8 +122,10 @@ private fun MixRow(
         )
         Spacer(modifier = Modifier.width(4.dp))
         Box(
+            // 48 dp = WCAG / Material minimum touch target. Icon stays at
+            // 18 dp inside; the larger Box just gives forgiving tap area.
             modifier = Modifier
-                .size(32.dp)
+                .size(48.dp)
                 .clip(CircleShape)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },

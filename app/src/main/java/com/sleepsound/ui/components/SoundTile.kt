@@ -59,6 +59,7 @@ import com.sleepsound.ui.theme.IconGrey
 import com.sleepsound.ui.theme.PureBlack
 import com.sleepsound.ui.theme.SoftWhite
 import com.sleepsound.ui.theme.SurfaceDark
+import java.util.Locale
 
 /**
  * One sound tile. Combines four orthogonal pieces of state:
@@ -105,7 +106,10 @@ fun SoundTile(
         label = "tilePress",
     )
     val contentColor = if (active) SoftWhite else DimGrey
-    val textColor = if (active) SoftWhite else DimGrey
+    // Labels stay SoftWhite in both states so inactive labels still hit
+    // WCAG AA body-text contrast (~14:1 vs SurfaceDark). Active vs inactive
+    // is conveyed by the icon tint + the 2 dp border, not by the label.
+    val textColor = SoftWhite
 
     // TalkBack: collapse the tile's children into one announcement
     // "<sound>, button, <state>" rather than reading the icon + label + badge
@@ -130,7 +134,7 @@ fun SoundTile(
             .scale(pressScale)
             .clip(RoundedCornerShape(12.dp))
             .background(bgColor)
-            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+            .border(2.dp, borderColor, RoundedCornerShape(12.dp))
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -165,6 +169,21 @@ fun SoundTile(
                     textAlign = TextAlign.Center,
                     maxLines = 2,
                 )
+                // Locked-but-not-yet-tapped: show the price beneath the
+                // label when Play Billing has cached it. Gives a clearer
+                // "premium = $0.99" signal than the corner lock badge alone.
+                // During preview countdown we suppress this — the countdown
+                // is the active signal, the price would be redundant.
+                if (locked && !active && previewMsRemaining == null && price != null) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = price,
+                        color = DimGrey,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
         }
 
@@ -188,14 +207,17 @@ private fun LockBadge(modifier: Modifier = Modifier) {
         imageVector = Icons.Default.Lock,
         contentDescription = stringResource(R.string.cd_locked_tile),
         tint = SoftWhite,
-        modifier = modifier.size(12.dp),
+        modifier = modifier.size(16.dp),
     )
 }
 
 @Composable
 private fun CountdownBadge(remainingMs: Long, modifier: Modifier = Modifier) {
     val s = (remainingMs / 1000).coerceAtLeast(0)
-    val label = if (s >= 60) "%d:%02d".format(s / 60, s % 60) else "${s}s"
+    // Locale.US — the format string is `%d:%02d` which is locale-stable
+    // for digits, but `String.format` without a locale picks the default
+    // and Robo crawler running in ar-SA throws on the bidi-formatter path.
+    val label = if (s >= 60) String.format(Locale.US, "%d:%02d", s / 60, s % 60) else "${s}s"
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(6.dp))

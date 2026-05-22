@@ -33,7 +33,6 @@ object PlaybackController {
 
     private const val PREFS_NAME = "playback_state"
     private const val KEY_ACTIVE_SOUNDS = "active_sounds"
-    private const val KEY_MASTER_VOLUME = "master_volume"
     private const val KEY_LAYER_GAIN_PREFIX = "layer_gain_"
 
     private var prefs: SharedPreferences? = null
@@ -51,9 +50,6 @@ object PlaybackController {
 
     private val _timerExpiryMs = MutableStateFlow<Long?>(null)
     val timerExpiryMs: StateFlow<Long?> = _timerExpiryMs.asStateFlow()
-
-    private val _masterVolume = MutableStateFlow(1f)
-    val masterVolume: StateFlow<Float> = _masterVolume.asStateFlow()
 
     private val _layerGains = MutableStateFlow<Map<SoundId, Float>>(emptyMap())
     val layerGains: StateFlow<Map<SoundId, Float>> = _layerGains.asStateFlow()
@@ -83,7 +79,6 @@ object PlaybackController {
             ?.mapNotNull { runCatching { SoundId.valueOf(it) }.getOrNull() }
             ?.toSet() ?: emptySet()
         _activeSounds.value = saved
-        _masterVolume.value = p.getFloat(KEY_MASTER_VOLUME, 1f)
 
         val gains = mutableMapOf<SoundId, Float>()
         SoundId.entries.forEach { id ->
@@ -234,6 +229,13 @@ object PlaybackController {
 
     fun stopPlayback(context: Context) {
         _isPlaying.value = false
+        // Explicit user-press Stop: clear the timer entirely so the next
+        // play tap starts fresh ("Timer off"). Audio-focus loss + timer
+        // expiry go through notifyServiceStopped() instead, which
+        // preserves _timerMinutes for the focus-loss case (see
+        // SleepAudioService.onFocusLostPermanent) so a brief phone call
+        // doesn't wipe the night's timer setting.
+        _timerMinutes.value = null
         _timerExpiryMs.value = null
         val intent = Intent(context, SleepAudioService::class.java).apply {
             action = SleepAudioService.ACTION_STOP
@@ -252,16 +254,17 @@ object PlaybackController {
         } else null
     }
 
-    fun setMasterVolume(volume: Float) {
-        val v = volume.coerceIn(0f, 1f)
-        _masterVolume.value = v
-        prefs?.edit()?.putFloat(KEY_MASTER_VOLUME, v)?.apply()
-    }
-
-    /** Service tells us it stopped on its own (timer expired, focus lost). */
-    fun notifyServiceStopped() {
+    /**
+     * Service tells us it stopped on its own (timer expired, focus lost,
+     * headphone unplugged). When [preserveTimer] is true the configured
+     * timer duration survives the interruption so the user can re-tap a
+     * sound and pick up with the same setting (used for focus loss and
+     * BecomingNoisy where the stop was external, not user-initiated).
+     * Default false matches timer-expired and explicit-stop semantics.
+     */
+    fun notifyServiceStopped(preserveTimer: Boolean = false) {
         _isPlaying.value = false
-        _timerMinutes.value = null
+        if (!preserveTimer) _timerMinutes.value = null
         _timerExpiryMs.value = null
         _previewExpiry.value = emptyMap()
         _previewFade.value = emptyMap()

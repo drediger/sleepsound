@@ -114,9 +114,7 @@ takes effect.
 
 If you have a question or wish to submit an inquiry about this policy:
 
-- Email: see hosted policy at <https://drediger.github.io/sleepsound/privacy/>
-  (the markdown copy intentionally does not duplicate the contact details
-  to avoid drift; the HTML is the publishable source)
+- Email: **djrediger@gmail.com**
 - Or open an issue at <https://github.com/drediger/sleepsound/issues>.
 
 [Required: developer information and a contact or inquiry mechanism.]

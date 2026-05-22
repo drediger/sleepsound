@@ -3,6 +3,168 @@
 All notable changes to Sleep Soundly are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/). Dates are YYYY-MM-DD.
 
+## [1.0.0-rc3] — 2026-05-22
+
+Pre-launch polish pass. Three rounds of independent agent audits (UX,
+code, marketing/listing, privacy) plus on-device reproduction surfaced
+~30 items spanning crash risk, false marketing claims, accessibility,
+billing UX, and copy. This RC trues-up every claim against the shipped
+code and lands the items that don't need post-launch test data.
+
+### Fixed — crash / policy risk
+- `SoundTile.CountdownBadge.label` now formats with `Locale.US` instead
+  of the system default. The pre-launch report's Robo crawler runs in
+  random locales (incl. `ar-SA`); the previous bare `"%d:%02d".format()`
+  would throw on the bidi-formatter path for any locked tile in preview.
+- `PlaybackController.stopPlayback` now clears `_timerMinutes` along
+  with `_timerExpiryMs`. Live reproduction in iter-2: hitting Stop with
+  a 30 m timer running left the pill in "Timer 30m" pending state, and
+  the next sound tap re-armed the timer at the full 30 m.
+- `notifyServiceStopped(preserveTimer: Boolean = false)` — audio-focus
+  loss (`onFocusLostPermanent`) and `BecomingNoisyReceiver` now preserve
+  `_timerMinutes` so a brief phone call or a headphone yank doesn't wipe
+  a multi-hour sleep timer.
+- `AudioEngine.WAKE_LOCK_TIMEOUT_MS` bumped from 10 h → 13 h so the
+  documented 12 h custom-timer ceiling actually plays for 12 hours.
+- `MediaSessionController` reads title + artist from `R.string` instead
+  of the hardcoded English literals `"SleepSound"` / `"Playing N sounds"`.
+  Lockscreen, Android Auto, and Bluetooth car decks now show
+  `Sleep Soundly` and the localized count, single-sourced from
+  `strings.xml`.
+- `AndroidManifest.application@tools:targetApi` aligned to `35` (was
+  `34`) to match `compileSdk` + `targetSdk`.
+
+### Fixed — visual / a11y
+- Inactive tile labels promoted to `SoftWhite` (from `DimGrey #A8B0C0`
+  which read ~3.7:1 on `SurfaceDark` — below WCAG AA body-text 4.5:1).
+  Active vs inactive is now conveyed by the icon tint + the 2 dp
+  border, not by the label color.
+- Active-tile border bumped from 1 dp → 2 dp for a more decisive
+  "this is in your mix" cue at a glance.
+- Lock badge enlarged from 12 dp → 16 dp so locked-vs-off is readable
+  without leaning into the screen.
+- Onboarding page-indicator inactive dot promoted from `DimmerGrey
+  #2D3548` (~1.5:1 on PureBlack — invisible) to `DimGrey` (~8.5:1,
+  clearly visible). Active dot promoted to `SoftWhite`.
+- MixPanel mute icon hit-target bumped 32 dp → 48 dp (Material/WCAG
+  minimum touch target). Icon stays 18 dp.
+- Onboarding moon icon swapped from stock `Icons.Default.Bedtime` to
+  the in-house `ic_notification_moon` crescent vector tinted
+  `SoftWhite` for brand consistency with the launcher + notification.
+
+### Fixed — lockscreen / notification
+- Lockscreen media controls now show **Stop**, not Pause. Dropped
+  `ACTION_PAUSE` from `MediaSessionController.setActions()` so SystemUI
+  picks STOP as the visible compact-view action. PAUSE callbacks are
+  still routed for BT media keys, just not surfaced as a tappable chip
+  — sleep users overwhelmingly want Stop overnight.
+- `POST_NOTIFICATIONS` system prompt no longer fires on first
+  composition (right after onboarding's "No tracking" pillar lands —
+  felt like a contradiction). Now deferred until the user starts their
+  first sound, and prefaced with a snackbar action: *"Lets you stop
+  audio from the lockscreen — not for marketing." [Allow]*.
+
+### Restored — settings sheet
+- OEM-killer guidance row (silently regressed in commit `a8bcd74`).
+  Reliability section now includes a `{Manufacturer} settings` row
+  linking to `https://dontkillmyapp.com/{manufacturer}`. Fixes the
+  promise made on onboarding p2 and in `STORE_LISTING.md`, `PRIVACY.md`,
+  `CHANGELOG.md` rc1, and `CLAUDE.md`. Falls back to the index page
+  if `Build.MANUFACTURER` is empty (rare emulator case).
+- Open-source license attribution. About row now opens an in-app
+  dialog rendering `assets/licenses.txt` (bundled NOTICE-equivalent
+  for AndroidX / Material3 / Play Billing). Closes Apache-2 §4(d)
+  without pulling in `play-services-oss-licenses` (which would have
+  added a GMS dependency to a no-network app).
+
+### Changed — settings sheet
+- Sheet content wrapped in `Modifier.heightIn(min = 480.dp)` so the
+  bundle row vanishing after the 5 s billing timeout no longer snaps
+  the sheet shorter. Sheet height now stable through the timeout
+  transition.
+- `settings_restore_subtitle` changed from "Restore premium unlocks
+  from your Google account" to "Restore purchases on this device" —
+  removes the "Google account" collision with the "No account" pillar
+  in About.
+- Privacy-policy row subtitle changed from the raw URL to *"Read what
+  we collect (nothing)"*. URL still opens via `Intent.ACTION_VIEW` on
+  tap; the row just no longer looks like raw text.
+- Deleted dead master-volume code path
+  (`PlaybackController._masterVolume`, `setMasterVolume`,
+  `KEY_MASTER_VOLUME`; `AudioEngine.setMasterVolume` + its render-loop
+  multiplier; `SleepAudioService` collector). The value defaulted to
+  `1f` and was never written by any UI; system volume rocker already
+  covers this need.
+
+### Changed — billing
+- Locked tiles now show the cached price (e.g. `$0.99`) beneath the
+  label when known. Lock badge alone was the single largest conversion
+  blocker per the first-time-user audit. Suppressed during preview
+  (countdown is the active signal) and during Buy chip (price already
+  in the chip).
+- `BillingManager.launchPurchaseFlow*` guards with a
+  `@Volatile purchaseInFlight` flag against double-taps of the Buy
+  chip / bundle row while Play sheet is opening. Cleared by the
+  `PurchasesUpdatedListener` on every response code.
+- Pending-purchase handling: `Purchase.PurchaseState.PENDING` (slow
+  card-auth flow) now emits `PurchaseResult.Pending` instead of being
+  silently dropped at the `purchaseState != PURCHASED` guard. UI shows
+  the new *"Purchase pending — we'll unlock it when it clears"*
+  snackbar. The actual unlock still happens via `queryExistingPurchases`
+  on the next `onResume`.
+- `BillingResult.responseCode` is now categorized into offline-vs-other
+  failures. `Failure(offline = true)` triggers the new
+  *"Couldn't reach Google Play — check your connection"* snackbar for
+  `SERVICE_UNAVAILABLE`, `NETWORK_ERROR`, `SERVICE_DISCONNECTED` instead
+  of the generic "Purchase failed — try again."
+- `Failure.reason` logged at WARN before being routed to the snackbar
+  so logcat captures the actual response code for debugging.
+- `launchPurchaseFlow*` failure paths route through `emitFailure()`
+  too — previously some early-returns (no client / no ProductDetails)
+  emitted Failure with no log.
+
+### Changed — player UX
+- Status header bumped from 14 sp Light → 16 sp Normal. Persistent
+  feedback ("Playing 3 sounds") now carries weight comparable to the
+  settings gear instead of being out-weighed by it.
+- Stop chip enlarged from 48 dp → 56 dp, icon 22 dp → 26 dp. Matches
+  the visual weight of the Timer pill on the opposite corner; Stop is
+  the primary overnight action.
+- 10-tile grid orphan no longer center-bracketed with empty cells.
+  Natural row-by-row fill puts the orphan at row-4 col-1; survives
+  vertical compression cleanly when MixPanel grows to 4+ rows.
+- MixPanel capped at `heightIn(max = 220.dp)` with vertical scroll.
+  Live-reproduced in iter-2 (6 active sounds): the tile grid was
+  squeezed below 3 rows. Cap keeps the grid usable; rows beyond the
+  cap scroll inside the panel.
+- Onboarding p2 body changed from "Android may stop Sleep Soundly
+  mid-night to save battery" to "Android sometimes silences sleep
+  apps overnight. Tap below to keep audio playing until your timer
+  ends." — concrete about what happens and what the button does.
+- Player resume copy changed from "Tap a sound to resume" to "Last
+  mix saved — tap any sound to start" — warmer, less system-message.
+
+### Fixed — store + privacy documentation
+- `store/STORE_LISTING.md`: removed false claims about screen
+  auto-dimming (IdleDimmer was removed in rc2). Replaced
+  "crossfade-bridged" with the actual loop behavior; specified
+  durations (rain/ocean/thunderstorm/fireplace 10 min,
+  fan/dryer ~1.5 min) instead of the misleading "multi-minute".
+  Re-worded the OEM-battery-killer bullet to the now-true
+  "link to dontkillmyapp.com". Added the `$3.99 bundle_all_sounds`
+  SKU to the in-app-purchase decision row.
+- `docs/privacy/index.html`: dropped the "Whether you have opted into
+  'resume on reboot'" data bullet (feature removed in rc2). Migrated
+  CSS palette from neutral greys to the moonlit-night slate-blue
+  tokens for visual consistency with the app. Added one-line GDPR
+  Article 15-17 acknowledgement (rights moot because we collect no
+  data, but the words inoculate against lazy regulator questions).
+- `store/PRIVACY.md`: Contact section now resolves to
+  `djrediger@gmail.com` directly instead of deferring to the hosted
+  HTML.
+- `store/DATA_SAFETY.md`: dropped the "if Pro tier ships in v1"
+  conditional in the Financial-info row — IAPs shipped.
+
 ## [1.0.0-rc2] — 2026-05-22
 
 Second release candidate. On-device review polish + billing UX fixes +

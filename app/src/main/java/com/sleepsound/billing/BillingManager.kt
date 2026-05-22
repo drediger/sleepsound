@@ -51,6 +51,10 @@ object BillingManager {
     private var billingClient: BillingClient? = null
     private var appScope: CoroutineScope? = null
     private val productCache = mutableMapOf<String, ProductDetails>()
+    // Guards against double-tap of the Buy chip / bundle row launching the
+    // Play sheet twice on slow billing init. Cleared by the
+    // PurchasesUpdatedListener on any response code (success, cancel, fail).
+    @Volatile private var purchaseInFlight = false
 
     private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
     val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
@@ -68,6 +72,9 @@ object BillingManager {
     val lastResult: StateFlow<PurchaseResult?> = _lastResult.asStateFlow()
 
     private val purchasesUpdatedListener = PurchasesUpdatedListener { billingResult, purchases ->
+        // Always clear the in-flight flag regardless of result code so the
+        // next Buy / Bundle tap is allowed through.
+        purchaseInFlight = false
         val scope = appScope ?: return@PurchasesUpdatedListener
         scope.launch {
             when (billingResult.responseCode) {
@@ -82,12 +89,25 @@ object BillingManager {
                     queryExistingPurchases()
                 }
                 else -> {
-                    _lastResult.value = PurchaseResult.Failure(
-                        reason = "${billingResult.responseCode}: ${billingResult.debugMessage}",
+                    emitFailure(
+                        "${billingResult.responseCode}: ${billingResult.debugMessage}",
+                        offline = isOfflineCode(billingResult.responseCode),
                     )
                 }
             }
         }
+    }
+
+    private fun isOfflineCode(code: Int): Boolean = when (code) {
+        BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE,
+        BillingClient.BillingResponseCode.NETWORK_ERROR,
+        BillingClient.BillingResponseCode.SERVICE_DISCONNECTED -> true
+        else -> false
+    }
+
+    private fun emitFailure(reason: String, offline: Boolean = false) {
+        Log.w(TAG, "purchase failed — $reason (offline=$offline)")
+        _lastResult.value = PurchaseResult.Failure(reason, offline = offline)
     }
 
     fun init(context: Context, scope: CoroutineScope) {
@@ -226,24 +246,27 @@ object BillingManager {
      * Console) so the caller can show an error.
      */
     fun launchPurchaseFlow(activity: Activity, id: SoundId): Boolean {
+        if (purchaseInFlight) return false
         if (id.tier == SoundTier.FREE) return false
         val productId = id.productId() ?: return false
         return launchPurchaseFlowForProduct(activity, productId)
     }
 
     /** Open the Play purchase sheet for the all-sounds bundle SKU. */
-    fun launchBundlePurchaseFlow(activity: Activity): Boolean =
-        launchPurchaseFlowForProduct(activity, BUNDLE_PRODUCT_ID)
+    fun launchBundlePurchaseFlow(activity: Activity): Boolean {
+        if (purchaseInFlight) return false
+        return launchPurchaseFlowForProduct(activity, BUNDLE_PRODUCT_ID)
+    }
 
     private fun launchPurchaseFlowForProduct(activity: Activity, productId: String): Boolean {
         val client = billingClient?.takeIf { it.isReady }
         if (client == null) {
-            _lastResult.value = PurchaseResult.Failure("Play Billing not available")
+            emitFailure("Play Billing not available", offline = true)
             return false
         }
         val details = productCache[productId]
         if (details == null) {
-            _lastResult.value = PurchaseResult.Failure("Product $productId not loaded")
+            emitFailure("Product $productId not loaded")
             return false
         }
 
@@ -255,8 +278,20 @@ object BillingManager {
         val params = BillingFlowParams.newBuilder()
             .setProductDetailsParamsList(productParams)
             .build()
+        purchaseInFlight = true
         val result = client.launchBillingFlow(activity, params)
-        return result.responseCode == BillingClient.BillingResponseCode.OK
+        return if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+            true
+        } else {
+            // launchBillingFlow itself rejected — listener won't fire, so
+            // clear the flag here. Surface a failure snackbar too.
+            purchaseInFlight = false
+            emitFailure(
+                "launch ${result.responseCode}: ${result.debugMessage}",
+                offline = isOfflineCode(result.responseCode),
+            )
+            false
+        }
     }
 
     suspend fun restorePurchases(): RestoreResult {
@@ -277,6 +312,14 @@ object BillingManager {
     }
 
     private suspend fun handlePurchase(purchase: Purchase) {
+        if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
+            // Slow card-auth flow — Play returns PENDING. We surface a
+            // dedicated snackbar; the actual unlock happens later when
+            // queryExistingPurchases sees PURCHASED on a subsequent
+            // onResume.
+            _lastResult.value = PurchaseResult.Pending
+            return
+        }
         if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) return
         val client = billingClient ?: return
 
@@ -314,7 +357,10 @@ sealed class PurchaseResult {
     /** All-sounds bundle purchased; UI shows a bundle-specific snackbar. */
     data object BundleSuccess : PurchaseResult()
     data object UserCanceled : PurchaseResult()
-    data class Failure(val reason: String) : PurchaseResult()
+    /** Slow card-auth in progress; entitlement applies after Play clears it. */
+    data object Pending : PurchaseResult()
+    /** Failure with optional offline flag so UI can show a network-specific copy. */
+    data class Failure(val reason: String, val offline: Boolean = false) : PurchaseResult()
 }
 
 data class RestoreResult(val restoredCount: Int, val error: String? = null)

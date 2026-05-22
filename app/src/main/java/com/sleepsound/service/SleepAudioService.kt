@@ -131,11 +131,6 @@ class SleepAudioService : LifecycleService() {
             }
             .launchIn(lifecycleScope)
 
-        // Master volume → engine
-        PlaybackController.masterVolume
-            .onEach { engine.setMasterVolume(it) }
-            .launchIn(lifecycleScope)
-
         // Active sounds × per-layer gains × preview fade → engine layer gains.
         // The preview fade is a transient multiplier (1.0 except while a
         // premium preview is fading out post-30s) so it doesn't disturb the
@@ -173,14 +168,19 @@ class SleepAudioService : LifecycleService() {
 
     private fun onBecomingNoisy() {
         Log.d(TAG, "onBecomingNoisy received")
-        PlaybackController.notifyServiceStopped()
+        // Headphones yanked — stop audio, but keep the timer setting so the
+        // user can re-tap to resume with the same duration.
+        PlaybackController.notifyServiceStopped(preserveTimer = true)
         handleStop("becomingNoisy")
     }
 
     private val focusCallbacks = object : AudioFocusCallbacks {
         override fun onFocusLostPermanent() {
             Log.d(TAG, "onFocusLostPermanent")
-            PlaybackController.notifyServiceStopped()
+            // Phone call gone to voicemail / another media app started.
+            // Preserve the timer minutes so a brief interruption doesn't
+            // wipe a multi-hour setting the user configured at bedtime.
+            PlaybackController.notifyServiceStopped(preserveTimer = true)
             handleStop("focusLossPermanent")
         }
         override fun onFocusLostTransient() {

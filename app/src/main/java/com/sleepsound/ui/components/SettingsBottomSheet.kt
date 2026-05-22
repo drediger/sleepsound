@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.ComponentActivity
@@ -14,15 +15,20 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -51,7 +57,6 @@ import com.sleepsound.billing.EntitlementStore
 import com.sleepsound.ui.theme.DimGrey
 import com.sleepsound.ui.theme.DimmerGrey
 import com.sleepsound.ui.theme.IconGrey
-import com.sleepsound.ui.theme.PureBlack
 import com.sleepsound.ui.theme.SoftWhite
 import com.sleepsound.ui.theme.SurfaceDark
 import kotlinx.coroutines.delay
@@ -68,6 +73,7 @@ fun SettingsBottomSheet(
     val privacyUrl = stringResource(R.string.privacy_policy_url)
     val coroutineScope = rememberCoroutineScope()
     var restoreStatus by remember { mutableStateOf<String?>(null) }
+    var showLicenses by remember { mutableStateOf(false) }
     // Re-check on every ON_RESUME so the row flips to "Allowed" when the
     // user returns from the system battery-optimization dialog.
     var batteryExempt by remember { mutableStateOf(isIgnoringBatteryOptimizations(context)) }
@@ -106,6 +112,8 @@ fun SettingsBottomSheet(
     val restoreNoneText = stringResource(R.string.restore_none)
     val restoreOneText = stringResource(R.string.restore_one)
     val restoreNFmt = stringResource(R.string.restore_n)
+    val oemTitleFmt = stringResource(R.string.settings_oem_title_format)
+    val oemSubtitle = stringResource(R.string.settings_oem_subtitle)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -113,7 +121,14 @@ fun SettingsBottomSheet(
         containerColor = SurfaceDark,
         contentColor = DimGrey,
     ) {
-        Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
+        // Fixed minimum height keeps the sheet visually stable when the
+        // bundle row hides after the 5 s billing timeout. Without this
+        // the sheet snaps shorter and the player tiles peek through.
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 24.dp, vertical = 8.dp)
+                .heightIn(min = 480.dp),
+        ) {
             SectionHeader(text = stringResource(R.string.settings_section_reliability))
             SettingRow(
                 title = stringResource(R.string.settings_battery_title),
@@ -123,6 +138,11 @@ fun SettingsBottomSheet(
                     stringResource(R.string.settings_battery_subtitle),
                 onClick = { requestIgnoreBatteryOptimizations(context) },
                 done = batteryExempt,
+            )
+            SettingRow(
+                title = oemTitleFmt.format(manufacturerLabel()),
+                subtitle = oemSubtitle,
+                onClick = { openUrl(context, oemKillerUrl()) },
             )
 
             SectionDivider()
@@ -161,8 +181,13 @@ fun SettingsBottomSheet(
             PromiseLine(text = stringResource(R.string.about_promise))
             SettingRow(
                 title = stringResource(R.string.about_privacy),
-                subtitle = privacyUrl,
+                subtitle = stringResource(R.string.about_privacy_subtitle),
                 onClick = { openUrl(context, privacyUrl) },
+            )
+            SettingRow(
+                title = stringResource(R.string.about_oss),
+                subtitle = stringResource(R.string.about_oss_subtitle),
+                onClick = { showLicenses = true },
             )
             VersionLine(
                 text = stringResource(
@@ -173,6 +198,44 @@ fun SettingsBottomSheet(
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
+
+    if (showLicenses) {
+        LicensesDialog(onDismiss = { showLicenses = false })
+    }
+}
+
+@Composable
+private fun LicensesDialog(onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    // Asset read on first composition only — the file is ~7 KB so loading
+    // it inline is fine; no need for a background dispatcher.
+    val text = remember {
+        runCatching {
+            context.assets.open("licenses.txt").use { it.bufferedReader().readText() }
+        }.getOrDefault("Open-source license attribution unavailable.")
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = SurfaceDark,
+        titleContentColor = SoftWhite,
+        textContentColor = DimGrey,
+        title = { Text(stringResource(R.string.about_oss), color = SoftWhite) },
+        text = {
+            Box(modifier = Modifier.heightIn(max = 420.dp)) {
+                Text(
+                    text = text,
+                    color = DimGrey,
+                    fontSize = 11.sp,
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.action_close), color = IconGrey)
+            }
+        },
+    )
 }
 
 @Composable
@@ -188,8 +251,7 @@ private fun SectionHeader(text: String) {
 
 @Composable
 private fun SectionDivider() {
-    // DimmerGrey #333 on SurfaceDark #111 is ~2:1 — intentionally subtle but
-    // visible. PureBlack on SurfaceDark was effectively invisible (1.59:1).
+    // DimmerGrey on SurfaceDark is intentionally subtle but visible.
     Box(modifier = Modifier.padding(vertical = 12.dp)) {
         HorizontalDivider(color = DimmerGrey, thickness = 1.dp)
     }
@@ -264,4 +326,19 @@ private fun openUrl(context: Context, url: String) {
         }
         context.startActivity(intent)
     }
+}
+
+private fun manufacturerLabel(): String {
+    val raw = Build.MANUFACTURER.trim()
+    if (raw.isEmpty()) return "Phone"
+    return raw.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+}
+
+private fun oemKillerUrl(): String {
+    // dontkillmyapp.com hosts per-OEM guidance pages keyed by lowercase
+    // manufacturer slug (e.g. /samsung, /xiaomi, /huawei). Fall back to
+    // the index page when MANUFACTURER is empty (rare; some emulators).
+    val slug = Build.MANUFACTURER.lowercase().trim().replace(" ", "-")
+    return if (slug.isEmpty()) "https://dontkillmyapp.com/"
+    else "https://dontkillmyapp.com/$slug"
 }

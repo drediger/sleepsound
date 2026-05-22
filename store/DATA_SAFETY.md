@@ -63,7 +63,7 @@ are:
 |---|---|---|
 | **Location** | Approximate, Precise | Not collected, not shared |
 | **Personal info** | Name, Email, User IDs, Address, Phone, Race & ethnicity, Political/religious beliefs, Sexual orientation, Other | Not collected, not shared |
-| **Financial info** | Payment info, Purchase history, Credit score, Other financial info | Not collected, not shared. *(See note on Play Billing below if Pro tier ships in v1.)* |
+| **Financial info** | Payment info, Purchase history, Credit score, Other financial info | Not collected, not shared. *(See Play Billing note below.)* |
 | **Health & fitness** | Health info, Fitness info | Not collected, not shared |
 | **Messages** | Emails, SMS/MMS, Other in-app messages | Not collected, not shared |
 | **Photos and videos** | Photos, Videos | Not collected, not shared |

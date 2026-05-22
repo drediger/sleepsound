@@ -2,9 +2,11 @@ package com.sleepsound.ui.screens
 
 import android.Manifest
 import android.app.Activity
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -33,6 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -90,13 +94,16 @@ fun PlayerScreen() {
     val bundleUnlockedMsg = stringResource(R.string.snackbar_bundle_unlocked)
     val canceledMsg = stringResource(R.string.snackbar_purchase_canceled)
     val failedMsg = stringResource(R.string.snackbar_purchase_failed)
+    val failedOfflineMsg = stringResource(R.string.snackbar_purchase_failed_offline)
+    val pendingMsg = stringResource(R.string.snackbar_purchase_pending)
 
     LaunchedEffect(lastPurchaseResult) {
         val msg = when (val r = lastPurchaseResult) {
             is PurchaseResult.Success -> unlockedMsgFmt.format(r.id.displayName)
             PurchaseResult.BundleSuccess -> bundleUnlockedMsg
             PurchaseResult.UserCanceled -> canceledMsg
-            is PurchaseResult.Failure -> failedMsg
+            PurchaseResult.Pending -> pendingMsg
+            is PurchaseResult.Failure -> if (r.offline) failedOfflineMsg else failedMsg
             null -> null
         }
         if (msg != null) {
@@ -118,8 +125,29 @@ fun PlayerScreen() {
         contract = ActivityResultContracts.RequestPermission(),
     ) { /* result ignored — playback continues regardless */ }
 
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    // Defer the POST_NOTIFICATIONS system prompt until the user has actually
+    // started a sound, AND show our own rationale in a snackbar action first.
+    // Otherwise the dialog fires immediately after onboarding's "No tracking"
+    // pillar lands, which reads as a contradiction. One ask per session.
+    val notifRationaleMsg = stringResource(R.string.permission_notif_rationale)
+    val notifAllowLabel = stringResource(R.string.permission_notif_action)
+    var notifPromptShown by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(activeSounds.isNotEmpty()) {
+        if (!activeSounds.isNotEmpty()) return@LaunchedEffect
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return@LaunchedEffect
+        if (notifPromptShown) return@LaunchedEffect
+        val granted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.POST_NOTIFICATIONS,
+        ) == PackageManager.PERMISSION_GRANTED
+        notifPromptShown = true
+        if (granted) return@LaunchedEffect
+        val result = snackbarHost.showSnackbar(
+            message = notifRationaleMsg,
+            actionLabel = notifAllowLabel,
+            withDismissAction = true,
+        )
+        if (result == SnackbarResult.ActionPerformed) {
             permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
@@ -146,8 +174,12 @@ fun PlayerScreen() {
                 Text(
                     text = statusMsg,
                     color = SoftWhite,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Light,
+                    // 16 sp Normal carries enough weight for the only
+                    // persistent "is anything happening?" signal; the
+                    // previous 14 sp Light competed visually with the
+                    // settings gear.
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
                     letterSpacing = 0.4.sp,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -189,11 +221,11 @@ fun PlayerScreen() {
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     val allIds = SoundId.entries
-                    // When the last row would have a single orphan tile,
-                    // bracket it with empty cells so it sits centered
-                    // instead of marooned in the left column.
-                    val centerLastRow = allIds.size % 3 == 1
-                    val mainCount = if (centerLastRow) allIds.size - 1 else allIds.size
+                    // Natural row-by-row fill — the orphan 10th tile lands at
+                    // row-4 col-1. Earlier rc2 code bracketed it with empty
+                    // cells to "center" it, but when MixPanel grew the grid
+                    // shrank and the centered orphan was the first thing to
+                    // clip. Left-aligned is more predictable under pressure.
 
                     @Composable
                     fun tile(id: SoundId) {
@@ -218,12 +250,7 @@ fun PlayerScreen() {
                         )
                     }
 
-                    items(mainCount) { i -> tile(allIds[i]) }
-                    if (centerLastRow) {
-                        item { Box(Modifier.aspectRatio(1f)) }
-                        item { tile(allIds.last()) }
-                        item { Box(Modifier.aspectRatio(1f)) }
-                    }
+                    items(allIds.size) { i -> tile(allIds[i]) }
                 }
             }
 
@@ -271,9 +298,13 @@ fun PlayerScreen() {
 
 @Composable
 private fun StopChip(onClick: () -> Unit) {
+    // 56 dp circle — matches the visual weight of the Timer pill on the
+    // opposite corner. For a sleep app Stop is the primary overnight
+    // action; under-sizing it relative to the Timer was the wrong
+    // hierarchy.
     Box(
         modifier = Modifier
-            .size(48.dp)
+            .size(56.dp)
             .clip(CircleShape)
             .background(SurfaceDark)
             .clickable(
@@ -287,7 +318,7 @@ private fun StopChip(onClick: () -> Unit) {
             imageVector = Icons.Default.Stop,
             contentDescription = stringResource(R.string.cd_stop),
             tint = SoftWhite,
-            modifier = Modifier.size(22.dp),
+            modifier = Modifier.size(26.dp),
         )
     }
 }

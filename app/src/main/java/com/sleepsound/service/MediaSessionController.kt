@@ -4,6 +4,7 @@ import android.content.Context
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import com.sleepsound.R
 
 /**
  * Wraps a [MediaSessionCompat] so lock-screen media controls, Bluetooth media
@@ -13,11 +14,17 @@ import android.support.v4.media.session.PlaybackStateCompat
  *                         a separate pause state)
  *   - STOP  → [onStop]
  *
+ * Only PLAY and STOP are advertised in the action mask so SystemUI picks
+ * Stop as the visible lockscreen / compact-notification action. The PAUSE
+ * callback is still routed (BT media keys send KEYCODE_MEDIA_PAUSE), it
+ * just isn't presented as a tappable control — Stop is what a sleep user
+ * actually wants from the lockscreen.
+ *
  * Token must be passed to [androidx.media.app.NotificationCompat.MediaStyle]
  * so the playback notification appears as a media-style card.
  */
 class MediaSessionController(
-    context: Context,
+    private val context: Context,
     private val onPlay: () -> Unit,
     private val onPause: () -> Unit,
     private val onStop: () -> Unit,
@@ -38,8 +45,7 @@ class MediaSessionController(
             PlaybackStateCompat.Builder()
                 .setState(PlaybackStateCompat.STATE_PLAYING, 0L, 1f)
                 .setActions(
-                    PlaybackStateCompat.ACTION_PAUSE or
-                        PlaybackStateCompat.ACTION_STOP or
+                    PlaybackStateCompat.ACTION_STOP or
                         PlaybackStateCompat.ACTION_PLAY,
                 )
                 .build(),
@@ -47,7 +53,10 @@ class MediaSessionController(
         session.setMetadata(
             MediaMetadataCompat.Builder()
                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, titleFor(activeCount))
-                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, "SleepSound")
+                .putString(
+                    MediaMetadataCompat.METADATA_KEY_ARTIST,
+                    context.getString(R.string.app_name),
+                )
                 .build(),
         )
     }
@@ -67,9 +76,9 @@ class MediaSessionController(
     }
 
     private fun titleFor(count: Int): String = when {
-        count == 1 -> "Playing 1 sound"
-        count > 1 -> "Playing $count sounds"
-        else -> "Idle"
+        count == 1 -> context.getString(R.string.notification_playing_one)
+        count > 1 -> context.getString(R.string.notification_playing_n, count)
+        else -> context.getString(R.string.notification_idle)
     }
 
     companion object { private const val TAG = "SleepSound" }
