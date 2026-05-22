@@ -42,6 +42,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -100,6 +105,23 @@ fun SoundTile(
     val contentColor = if (active) IconGrey else DimGrey
     val textColor = if (active) IconGrey else DimGrey
 
+    // TalkBack: collapse the tile's children into one announcement
+    // "<sound>, button, <state>" rather than reading the icon + label + badge
+    // independently. Without this the icon's contentDescription and the price
+    // pill text get double-announced.
+    val stateDesc = when {
+        showBuyPrompt -> stringResource(R.string.tile_state_buy, price ?: "")
+        active && previewMsRemaining != null ->
+            stringResource(
+                R.string.tile_state_previewing,
+                (previewMsRemaining / 1000L).coerceAtLeast(0L).toInt(),
+            )
+        active -> stringResource(R.string.tile_state_playing)
+        locked -> stringResource(R.string.tile_state_locked)
+        else -> stringResource(R.string.tile_state_off)
+    }
+    val tileName = id.displayName
+
     Box(
         modifier = modifier
             .aspectRatio(1f)
@@ -115,13 +137,18 @@ fun SoundTile(
                     if (showBuyPrompt) onBuy() else onToggle()
                 },
             )
+            .clearAndSetSemantics {
+                role = Role.Button
+                contentDescription = tileName
+                stateDescription = stateDesc
+            }
             .padding(8.dp),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
                 imageVector = iconFor(id),
-                contentDescription = id.displayName,
+                contentDescription = null,
                 tint = contentColor,
                 modifier = Modifier.size(28.dp),
             )

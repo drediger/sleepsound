@@ -258,9 +258,13 @@ object PlaybackController {
     }
 
     fun setTimer(minutes: Int?) {
-        _timerMinutes.value = minutes
-        _timerExpiryMs.value = if (minutes != null && _isPlaying.value) {
-            System.currentTimeMillis() + minutes * 60_000L
+        // Treat <=0 as "no timer" rather than computing a now-or-past expiry.
+        // The UI already clamps to >=1; this is defensive for any future
+        // call path (Tasker, Wear, MediaSession custom action).
+        val normalized = minutes?.takeIf { it > 0 }
+        _timerMinutes.value = normalized
+        _timerExpiryMs.value = if (normalized != null && _isPlaying.value) {
+            System.currentTimeMillis() + normalized * 60_000L
         } else null
     }
 

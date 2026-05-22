@@ -27,6 +27,12 @@ class LayerMixer(
 
     private val states: Map<SoundId, LayerState> = sources.mapValues { LayerState() }
     private val gainStep = 1f / (SAMPLE_RATE * LAYER_FADE_MS / 1000f)
+    // Accumulator wide enough to hold the sum of all layers without overflow.
+    // Clamp to PCM range happens once, after every layer is summed, so a
+    // partially-out-of-phase layer can still pull the sum back into range.
+    // Previously, per-layer clipping was destructive across iterations and
+    // produced audible distortion when 3+ layers played at unity gain.
+    private val accum: IntArray = IntArray(BUFFER_FRAMES * 2)
 
     fun setActive(id: SoundId, active: Boolean) {
         states[id]?.targetGain = if (active) 1f else 0f
@@ -40,7 +46,8 @@ class LayerMixer(
         states.values.any { it.targetGain > 0f || it.currentGain > 0.001f }
 
     override fun fillBuffer(out: ShortArray, frames: Int) {
-        for (i in 0 until frames * 2) out[i] = 0
+        val outLen = frames * 2
+        for (i in 0 until outLen) accum[i] = 0
 
         for ((id, state) in states) {
             if (state.targetGain <= 0.001f && state.currentGain <= 0.001f) continue
@@ -55,12 +62,14 @@ class LayerMixer(
                     g > state.targetGain -> maxOf(g - gainStep, state.targetGain)
                     else -> g
                 }
-                val l = out[i * 2].toInt() + (state.buf[i * 2].toFloat() * g).toInt()
-                val r = out[i * 2 + 1].toInt() + (state.buf[i * 2 + 1].toFloat() * g).toInt()
-                out[i * 2] = l.coerceIn(SHORT_MIN, SHORT_MAX).toShort()
-                out[i * 2 + 1] = r.coerceIn(SHORT_MIN, SHORT_MAX).toShort()
+                accum[i * 2] += (state.buf[i * 2].toFloat() * g).toInt()
+                accum[i * 2 + 1] += (state.buf[i * 2 + 1].toFloat() * g).toInt()
             }
             state.currentGain = g
+        }
+
+        for (i in 0 until outLen) {
+            out[i] = accum[i].coerceIn(SHORT_MIN, SHORT_MAX).toShort()
         }
     }
 }

@@ -47,6 +47,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -150,7 +153,11 @@ fun PlayerScreen() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .align(Alignment.Center)
-                            .padding(vertical = 14.dp),
+                            .padding(vertical = 14.dp)
+                            // Polite liveRegion so TalkBack announces
+                            // "Playing 3 sounds" when the count changes,
+                            // without interrupting the current utterance.
+                            .semantics { liveRegion = LiveRegionMode.Polite },
                     )
                     Box(
                         modifier = Modifier

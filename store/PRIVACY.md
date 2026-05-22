@@ -1,19 +1,20 @@
 # Privacy policy — Sleep Soundly
 
-> **Sourcing note.** Every required section in this policy maps to an
-> explicit Google Play User Data policy requirement quoted in the
-> implementation notes below. The bracketed `[Required: ...]` tags reference
-> the specific clause from
-> [Google Play User Data policy](https://support.google.com/googleplay/android-developer/answer/9888076).
-> Before publication, delete those tags and the implementation-notes section.
+> **Canonical source: [`docs/privacy/index.html`](../docs/privacy/index.html)**,
+> hosted at <https://drediger.github.io/sleepsound/privacy/>. That HTML is
+> what Play Console links to. This markdown remains in the repo as a
+> requirements checklist (the bracketed `[Required: ...]` tags below trace
+> each section back to a clause in
+> [Google Play User Data policy](https://support.google.com/googleplay/android-developer/answer/9888076)).
+> If you edit policy text, edit the HTML first; sync back here only as
+> needed for future audits.
 
-**Effective date:** *<replace with publication date>*
-**Last updated:** *<replace with publication date>*
+**Effective date:** 2026-05-22
+**Last updated:** 2026-05-22
 
 This is the privacy policy for **Sleep Soundly**, an Android sleep-sound app
-published on Google Play by **\<Developer / Company name here\>** ("we",
-"us", or "the developer"). [Required: entity in the listing must appear
-in the privacy policy.]
+published on Google Play by **David Rediger** ("we", "us", or "the developer").
+[Required: entity in the listing must appear in the privacy policy.]
 
 ## Summary
 
@@ -114,9 +115,10 @@ takes effect.
 
 If you have a question or wish to submit an inquiry about this policy:
 
-- Email: **\<contact email here, e.g. privacy@yourdomain.example\>**
-- Postal address (optional, recommended for EU users):
-  **\<your business address here\>**
+- Email: see hosted policy at <https://drediger.github.io/sleepsound/privacy/>
+  (the markdown copy intentionally does not duplicate the contact details
+  to avoid drift; the HTML is the publishable source)
+- Or open an issue at <https://github.com/drediger/sleepsound/issues>.
 
 [Required: developer information and a contact or inquiry mechanism.]
 

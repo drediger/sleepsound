@@ -21,9 +21,13 @@ class AudioFocusManager(
 ) {
     private val audioManager = context.applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
+    // CONTENT_TYPE_SONIFICATION rather than CONTENT_TYPE_MUSIC so the OS does
+    // not apply music-app behaviors (route to BT music sink, "Music" lockscreen
+    // label, Samsung "Dolby Atmos for Music" DSP) to what is really ambient
+    // sleep audio. Match in AudioEngine's AudioTrack attributes.
     private val attributes = AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_MEDIA)
-        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
         .build()
 
     private val listener = AudioManager.OnAudioFocusChangeListener { change ->

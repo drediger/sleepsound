@@ -61,7 +61,7 @@ import com.sleepsound.ui.theme.SurfaceDark
 
 /**
  * Two-card first-run carousel. Shown over the player on first launch:
- *   1. What SleepSound is (the five-pillar promise + the four free sounds).
+ *   1. What Sleep Soundly is (the four-pillar promise + the four free sounds).
  *   2. Battery-optimization exemption opt-in (the #1 cause of overnight
  *      audio death). The Reliability section in Settings has the deeper
  *      OEM-killer guidance for the few users who hit that case.

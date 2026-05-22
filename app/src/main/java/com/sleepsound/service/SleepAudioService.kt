@@ -33,7 +33,11 @@ class SleepAudioService : LifecycleService() {
     private lateinit var sleepTimer: SleepTimer
     private lateinit var mediaSession: MediaSessionController
     private var foregroundActive = false
-    private var pausedForFocus = false
+    // The audio focus listener can fire on a non-main thread on some OEMs
+    // (the request is built without an explicit Handler). @Volatile guards
+    // against a missed write that would strand the service paused after a
+    // phone call.
+    @Volatile private var pausedForFocus = false
 
     override fun onCreate() {
         super.onCreate()

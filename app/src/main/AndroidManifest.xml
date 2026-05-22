@@ -46,9 +46,15 @@
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
 
+        <!--
+            exported="false": BOOT_COMPLETED is a protected system broadcast,
+            delivered to the receiver by the system directly. Exposing the
+            receiver to third-party apps offers no benefit and would let a
+            misbehaving app forge a boot to trigger auto-resume.
+        -->
         <receiver
             android:name=".BootReceiver"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>

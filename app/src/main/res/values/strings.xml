@@ -19,6 +19,13 @@
     <string name="cd_settings">Settings</string>
     <string name="cd_stop">Stop playback</string>
     <string name="cd_timer">Sleep timer</string>
+
+    <!-- TalkBack state descriptions for sound tiles -->
+    <string name="tile_state_buy">tap to buy for %1$s</string>
+    <string name="tile_state_previewing">previewing, %1$d seconds remaining</string>
+    <string name="tile_state_playing">playing</string>
+    <string name="tile_state_locked">locked, tap to preview</string>
+    <string name="tile_state_off">off</string>
     <string name="cd_locked_tile">Premium — tap to preview</string>
     <string name="cd_mute_format">Mute %1$s</string>
     <string name="cd_unmute_format">Unmute %1$s</string>
@@ -74,7 +81,7 @@
     <string name="onboarding_p1_title">Sleep sound, on your terms.</string>
     <string name="onboarding_p1_body">No ads. No account. No subscription. No tracking. Four free sounds out of the box: brown noise, white noise, rain, and ocean.</string>
     <string name="onboarding_p2_title">Keep audio alive overnight.</string>
-    <string name="onboarding_p2_body">Android may stop Sleep Soundly mid-night to save battery. The system dialog asks if you want to exempt the app — choose Allow to keep audio playing until your timer ends.</string>
+    <string name="onboarding_p2_body">Android may stop Sleep Soundly mid-night to save battery. Follow the system prompt to exempt the app so audio plays until your timer ends.</string>
     <string name="onboarding_p2_action">Open exemption dialog</string>
     <string name="onboarding_p2_fulfilled">Battery exemption granted</string>
 </resources>

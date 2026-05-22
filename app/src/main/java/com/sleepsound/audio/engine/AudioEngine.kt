@@ -91,7 +91,9 @@ class AudioEngine(
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    // SONIFICATION (not MUSIC) — ambient sleep audio, not a song.
+                    // Matches AudioFocusManager so the focus and the track agree.
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                     .build()
             )
             .setAudioFormat(
