@@ -14,5 +14,4 @@
 # subclasses whose framework callbacks (onStartCommand, onReceive, etc.)
 # we override.
 -keep class com.sleepsound.service.SleepAudioService { *; }
--keep class com.sleepsound.BootReceiver { *; }
 -keep class com.sleepsound.MainActivity { *; }
