@@ -236,8 +236,16 @@ object BillingManager {
         launchPurchaseFlowForProduct(activity, BUNDLE_PRODUCT_ID)
 
     private fun launchPurchaseFlowForProduct(activity: Activity, productId: String): Boolean {
-        val client = billingClient?.takeIf { it.isReady } ?: return false
-        val details = productCache[productId] ?: return false
+        val client = billingClient?.takeIf { it.isReady }
+        if (client == null) {
+            _lastResult.value = PurchaseResult.Failure("Play Billing not available")
+            return false
+        }
+        val details = productCache[productId]
+        if (details == null) {
+            _lastResult.value = PurchaseResult.Failure("Product $productId not loaded")
+            return false
+        }
 
         val productParams = listOf(
             BillingFlowParams.ProductDetailsParams.newBuilder()
@@ -273,7 +281,8 @@ object BillingManager {
         val client = billingClient ?: return
 
         val ids = soundIdsFor(purchase.products)
-        ids.forEach { EntitlementStore.unlock(it) }
+        // Single batched write to SharedPreferences regardless of bundle size.
+        EntitlementStore.unlockMany(ids)
 
         if (!purchase.isAcknowledged) {
             val ackParams = AcknowledgePurchaseParams.newBuilder()
@@ -286,10 +295,15 @@ object BillingManager {
                 Log.w(TAG, "acknowledge failed: ${ackResult.debugMessage}")
             }
         }
-        // Surface a single result event. The bundle returns multiple ids; we
-        // pick any one to populate Success.id, since the UI just needs
-        // "something" to trigger the snackbar.
-        ids.firstOrNull()?.let { _lastResult.value = PurchaseResult.Success(it) }
+        // Bundle gets its own snackbar variant so the user sees "All sounds
+        // unlocked" instead of one arbitrary sound name from the expanded set
+        // (set iteration order isn't deterministic and the bundle isn't about
+        // any single sound anyway).
+        val isBundle = BUNDLE_PRODUCT_ID in purchase.products
+        when {
+            isBundle -> _lastResult.value = PurchaseResult.BundleSuccess
+            else -> ids.firstOrNull()?.let { _lastResult.value = PurchaseResult.Success(it) }
+        }
     }
 }
 
@@ -297,6 +311,8 @@ enum class ConnectionState { DISCONNECTED, CONNECTING, CONNECTED, ERROR }
 
 sealed class PurchaseResult {
     data class Success(val id: SoundId) : PurchaseResult()
+    /** All-sounds bundle purchased; UI shows a bundle-specific snackbar. */
+    data object BundleSuccess : PurchaseResult()
     data object UserCanceled : PurchaseResult()
     data class Failure(val reason: String) : PurchaseResult()
 }

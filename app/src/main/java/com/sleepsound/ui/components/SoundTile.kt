@@ -89,16 +89,17 @@ fun SoundTile(
 
     val borderColor by animateColorAsState(
         targetValue = when {
-            showBuyPrompt -> IconGrey
-            active -> IconGrey
+            showBuyPrompt -> SoftWhite
+            active -> SoftWhite
             else -> Color.Transparent
         },
         label = "tileBorder",
     )
-    val bgColor by animateColorAsState(
-        targetValue = if (active || showBuyPrompt) SurfaceDark else PureBlack,
-        label = "tileBg",
-    )
+    // Every tile gets a SurfaceDark card so inactive ones still read as
+    // buttons against PureBlack — without this the inactive grid looks like
+    // a list of floating glyphs. Active/buy state is conveyed by border +
+    // content brightness, not by bg contrast.
+    val bgColor = SurfaceDark
     val pressScale by animateFloatAsState(
         targetValue = if (pressed) 0.94f else 1f,
         label = "tilePress",
@@ -186,7 +187,7 @@ private fun LockBadge(modifier: Modifier = Modifier) {
     Icon(
         imageVector = Icons.Default.Lock,
         contentDescription = stringResource(R.string.cd_locked_tile),
-        tint = DimGrey,
+        tint = SoftWhite,
         modifier = modifier.size(12.dp),
     )
 }

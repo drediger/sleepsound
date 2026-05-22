@@ -10,15 +10,16 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+// "Moonlit night" palette (May 2026). PureBlack stays as the bg so
+// AMOLED true-black is preserved; surfaces + content are cool-tinted to
+// harmonize with the slate-blue / cream launcher icon. Hex names are
+// historical — the values are now slate-blue, not neutral grey.
 val PureBlack = Color(0xFF000000)
-// Inactive content / chrome. Bumped from #666 → #888 (May 2026) after
-// daytime testing showed #666 on PureBlack was readable at bedroom
-// brightness but not in normal use. #888 ≈ 6.4:1 on black.
-val DimGrey = Color(0xFF888888)
-val DimmerGrey = Color(0xFF333333)
-val SurfaceDark = Color(0xFF111111)
-val IconGrey = Color(0xFF888888)
-val SoftWhite = Color(0xFFCCCCCC)
+val DimGrey = Color(0xFFA8B0C0)       // cool moonlit grey for inactive content
+val DimmerGrey = Color(0xFF2D3548)    // slate tertiary (borders, scrims)
+val SurfaceDark = Color(0xFF1A2236)   // slate-blue card, ~3.6:1 on PureBlack
+val IconGrey = Color(0xFFA8B0C0)      // matches DimGrey (cool)
+val SoftWhite = Color(0xFFE0E4EC)     // cool moonlight primary text
 
 private val AmoledColors = darkColorScheme(
     primary = IconGrey,

@@ -14,7 +14,7 @@ fun SoundId.productId(): String? =
 
 /**
  * One-shot all-sounds bundle. Registered separately in Play Console at a
- * discounted price ($3.99 vs 7 x $0.99 = $6.93). Purchasing it unlocks
+ * discounted price ($3.99 vs 6 x $0.99 = $5.94). Purchasing it unlocks
  * every premium SoundId.
  */
 const val BUNDLE_PRODUCT_ID = "bundle_all_sounds"

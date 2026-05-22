@@ -212,14 +212,22 @@ See [`CHANGELOG.md`](CHANGELOG.md) "Known gaps" section. The big ones:
   change (e.g. shipping samples broke "no looped audio"), update the
   copy in the same commit. The user has been explicit that bad claims
   are unacceptable.
-- **AMOLED contrast palette** lives in `ui/theme/AmoledTheme.kt`. Five
-  greys: `PureBlack #000`, `SurfaceDark #111`, `DimmerGrey #333`,
-  `DimGrey #888`, `IconGrey #888`, `SoftWhite #CCC`. Text roles
-  (settled May 2026 after daytime testing):
+- **Moonlit-night palette** lives in `ui/theme/AmoledTheme.kt`. Bg
+  stays `PureBlack #000` (AMOLED-true-black, part of the four-pillar
+  promise); everything else is cool-tinted slate-blue to harmonize
+  with the slate-and-cream launcher moon icon. Token names are
+  historical — values are now slate-blue, not neutral grey.
+  - `PureBlack #000` — background.
+  - `SurfaceDark #1A2236` — slate-blue card surface (~3.6:1 on bg).
+  - `DimmerGrey #2D3548` — slate tertiary (borders, scrims).
+  - `DimGrey #A8B0C0` / `IconGrey #A8B0C0` — cool inactive content.
+  - `SoftWhite #E0E4EC` — cool moonlight primary text + active accent.
   - **Primary text** (titles, status, sound names, active tile labels,
-    button labels) → `SoftWhite #CCC`.
+    button labels, active tile border) → `SoftWhite`.
   - **Secondary text** (subtitles, captions, inactive tile labels,
-    dropdown items, version/promise) → `DimGrey #888` (bumped from
-    `#666` — original was readable at bedroom brightness on a Galaxy
-    S25 but not in normal use).
-  - `DimmerGrey #333` is reserved for tertiary fades.
+    dropdown items, version/promise) → `DimGrey`.
+  - Palette settled May 2026 after iterating from neutral-grey
+    (#666/#111) through neutral-bumped (#888/#1F1F1F) to the current
+    moon-themed slate. Earlier values were tuned only for bedroom
+    brightness; daytime testing surfaced the need for both brighter
+    surfaces AND a more inviting hue.

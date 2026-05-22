@@ -85,19 +85,19 @@ fun TimerSelector(
             modifier = Modifier.background(SurfaceDark),
         ) {
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.timer_off_label), color = DimGrey) },
+                text = { Text(stringResource(R.string.timer_off_label), color = SoftWhite) },
                 onClick = { onSelect(null); expanded = false },
             )
             listOf(15, 30, 60, 90).forEach { m ->
                 DropdownMenuItem(
                     text = {
-                        Text(stringResource(R.string.timer_n_minutes, m), color = DimGrey)
+                        Text(stringResource(R.string.timer_n_minutes, m), color = SoftWhite)
                     },
                     onClick = { onSelect(m); expanded = false },
                 )
             }
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.timer_custom), color = DimGrey) },
+                text = { Text(stringResource(R.string.timer_custom), color = SoftWhite) },
                 onClick = {
                     expanded = false
                     showCustomDialog = true

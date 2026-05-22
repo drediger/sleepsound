@@ -32,6 +32,7 @@
 
     <!-- Purchase snackbar -->
     <string name="snackbar_unlocked">%1$s unlocked</string>
+    <string name="snackbar_bundle_unlocked">All sounds unlocked</string>
     <string name="snackbar_purchase_canceled">Purchase canceled</string>
     <string name="snackbar_purchase_failed">Purchase failed — try again</string>
     <string name="buy_fallback">Buy</string>

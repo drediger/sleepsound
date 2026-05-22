@@ -87,12 +87,14 @@ fun PlayerScreen() {
     val lastPurchaseResult by BillingManager.lastResult.collectAsState()
     val snackbarHost = remember { SnackbarHostState() }
     val unlockedMsgFmt = stringResource(R.string.snackbar_unlocked)
+    val bundleUnlockedMsg = stringResource(R.string.snackbar_bundle_unlocked)
     val canceledMsg = stringResource(R.string.snackbar_purchase_canceled)
     val failedMsg = stringResource(R.string.snackbar_purchase_failed)
 
     LaunchedEffect(lastPurchaseResult) {
         val msg = when (val r = lastPurchaseResult) {
             is PurchaseResult.Success -> unlockedMsgFmt.format(r.id.displayName)
+            PurchaseResult.BundleSuccess -> bundleUnlockedMsg
             PurchaseResult.UserCanceled -> canceledMsg
             is PurchaseResult.Failure -> failedMsg
             null -> null
@@ -170,7 +172,7 @@ fun PlayerScreen() {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = stringResource(R.string.cd_settings),
-                        tint = DimGrey,
+                        tint = SoftWhite,
                         modifier = Modifier.size(20.dp),
                     )
                 }
@@ -284,7 +286,7 @@ private fun StopChip(onClick: () -> Unit) {
         Icon(
             imageVector = Icons.Default.Stop,
             contentDescription = stringResource(R.string.cd_stop),
-            tint = DimGrey,
+            tint = SoftWhite,
             modifier = Modifier.size(22.dp),
         )
     }

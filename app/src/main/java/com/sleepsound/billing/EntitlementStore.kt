@@ -49,6 +49,21 @@ object EntitlementStore {
     }
 
     /**
+     * Mark several premium sounds as purchased in one go — single SharedPrefs
+     * write regardless of how many ids are added. Used by [BillingManager]
+     * when a bundle purchase entitles all six premium sounds at once.
+     */
+    fun unlockMany(ids: Set<SoundId>) {
+        val toAdd = ids.filter { it.tier == SoundTier.PREMIUM }.toSet()
+        if (toAdd.isEmpty()) return
+        val current = _unlocked.value
+        val updated = current + toAdd
+        if (updated == current) return
+        _unlocked.value = updated
+        persistPaid(updated)
+    }
+
+    /**
      * Replace the set of paid unlocks. Called by [BillingManager] after a
      * [queryPurchasesAsync] response so removed/refunded entitlements
      * are also reflected.
