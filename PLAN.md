@@ -65,7 +65,6 @@
 - Audio focus handling: transient-loss → pause; can-duck → 30 % duck; permanent-loss → stop. Resumes on focus regain.
 - Partial wake lock acquired while rendering (10 h safety timeout) for explicit Doze survival.
 - Sleep timer with presets (15 / 30 / 60 / 90 min) **plus a custom value up to 12 h** via an in-app dialog.
-- Optional resume-on-reboot (opt-in, off by default) via `BootReceiver`.
 - In-app Reliability section pointing at the system battery-optimization dialog and per-OEM `dontkillmyapp.com` guidance. (A dedicated first-run onboarding carousel is still on the punch list.)
 - Play Billing 8.x per-sound one-time IAPs ($0.99 each, no subscription tier). 30-second live preview-then-buy mechanic.
 
@@ -176,7 +175,6 @@ Use **`MediaSessionService`** from Media3, not a raw `Service`. You inherit Medi
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
 <service
     android:name=".service.SleepAudioService"
@@ -194,7 +192,6 @@ Use **`MediaSessionService`** from Media3, not a raw `Service`. You inherit Medi
 - `MediaSession.Callback.onPlay()` → `AudioEngine.start()`
 - `onStop()` → release focus, stop service
 - `onTaskRemoved()` → keep playing (correct for this app)
-- `BOOT_COMPLETED` receiver checks opt-in flag, restarts service with last preset
 
 ### Audio focus & interruptions
 
@@ -255,13 +252,12 @@ Scaffolded:
 - **`AudioFocusManager`** — full focus state machine (LOSS/TRANSIENT/DUCK/GAIN) with duck-to-30%
 - **`BecomingNoisyReceiver`** — dynamic registration, pauses on headphone/BT disconnect
 - **`SleepTimer`** — coroutine-backed, only ticks while playing, fires fade-out on expiry
-- **`PlaybackController` singleton** — `StateFlow`-based, persists active sounds + per-layer gains + master volume + resume-on-reboot opt-in via SharedPreferences
+- **`PlaybackController` singleton** — `StateFlow`-based, persists active sounds + per-layer gains + master volume via SharedPreferences
 - **Sound-picker UI** — 3-column grid of `SoundTile`s, animated active state
 - **`MixPanel`** — per-active-sound volume sliders (always visible when sounds are active)
 - **`TimerSelector`** — dropdown + live countdown (mm:ss) while playing
 - **`IdleDimmer`** — auto-dims activity brightness to 2% after 30s of no touch; tap-anywhere overlay restores
-- **`SettingsBottomSheet`** — Reliability section with three rows: battery-opt request (`ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`), OEM-specific instructions (opens `dontkillmyapp.com/<manufacturer>`), resume-on-reboot toggle
-- **`BootReceiver`** — opt-in, restarts service with last active sounds on `BOOT_COMPLETED`
+- **`SettingsBottomSheet`** — Reliability section with one row: battery-opt request (`ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`)
 - **Adaptive app icon** — crescent-moon foreground vector on `#0F0F2A` deep-night background. Placeholder design; replace pre-store.
 - **Auto-orchestration** — tap any tile from stopped state auto-starts; clearing all tiles auto-stops
 

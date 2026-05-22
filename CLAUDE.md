@@ -214,11 +214,12 @@ See [`CHANGELOG.md`](CHANGELOG.md) "Known gaps" section. The big ones:
   are unacceptable.
 - **AMOLED contrast palette** lives in `ui/theme/AmoledTheme.kt`. Five
   greys: `PureBlack #000`, `SurfaceDark #111`, `DimmerGrey #333`,
-  `DimGrey #666`, `IconGrey #888`, `SoftWhite #CCC`. Inactive content
-  uses `DimGrey #666` (verified readable at typical bedroom brightness
-  on a Galaxy S25); `DimmerGrey #333` is reserved for tertiary fades
-  and the `IdleDimmer` scrim baseline.
-- **The `IdleDimmer`** absorbs the first tap after 30 s of inactivity
-  to wake the screen — by design, so a sleepy user doesn't
-  accidentally toggle a sound. Be aware when scripting taps that
-  test-tap N+1 is the one that registers.
+  `DimGrey #888`, `IconGrey #888`, `SoftWhite #CCC`. Text roles
+  (settled May 2026 after daytime testing):
+  - **Primary text** (titles, status, sound names, active tile labels,
+    button labels) → `SoftWhite #CCC`.
+  - **Secondary text** (subtitles, captions, inactive tile labels,
+    dropdown items, version/promise) → `DimGrey #888` (bumped from
+    `#666` — original was readable at bedroom brightness on a Galaxy
+    S25 but not in normal use).
+  - `DimmerGrey #333` is reserved for tertiary fades.

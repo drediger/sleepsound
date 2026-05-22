@@ -34,7 +34,6 @@ copy in [`store/STORE_LISTING.md`](./store/STORE_LISTING.md).
 │       ├── java/com/sleepsound/
 │       │   ├── MainActivity.kt
 │       │   ├── PlaybackController.kt       singleton playback state
-│       │   ├── BootReceiver.kt             optional resume-on-reboot
 │       │   ├── audio/                      SoundId, tier, catalog
 │       │   │   ├── engine/                 AudioTrack pipeline + mixer
 │       │   │   └── procedural/             noise generators

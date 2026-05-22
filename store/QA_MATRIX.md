@@ -107,15 +107,7 @@ The Settings → "Allow background playback" row opens Android's
 8. **Refund test:** request a refund in Play Console; on next
    `onResume`, the sound re-locks.
 
-### 7. Reboot resume
-
-1. Toggle Settings → "Resume on reboot" on.
-2. Start Rain + Brown noise.
-3. Reboot the device.
-4. After reboot, before unlocking: audio should resume automatically
-   within ~10 s.
-
-### 8. No-tracking audit
+### 7. No-tracking audit
 
 This is the visible-claim audit; failure means the privacy copy is
 false.

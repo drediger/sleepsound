@@ -25,10 +25,9 @@ private const val PREVIEW_TICK_MS = 100L
 
 /**
  * Process-wide singleton state for the player. UI writes here; the service
- * collects flows and reacts. Persists selected sounds, per-layer gains,
- * master volume, and the resume-on-reboot opt-in via SharedPreferences.
- * Timer state and preview expiries are intentionally not persisted across
- * launches.
+ * collects flows and reacts. Persists selected sounds, per-layer gains, and
+ * master volume via SharedPreferences. Timer state and preview expiries are
+ * intentionally not persisted across launches.
  */
 object PlaybackController {
 
@@ -36,16 +35,6 @@ object PlaybackController {
     private const val KEY_ACTIVE_SOUNDS = "active_sounds"
     private const val KEY_MASTER_VOLUME = "master_volume"
     private const val KEY_LAYER_GAIN_PREFIX = "layer_gain_"
-    private const val KEY_RESUME_ON_REBOOT = "resume_on_reboot"
-    private const val KEY_LAST_STOP_AT_MS = "last_stop_at_ms"
-
-    /**
-     * Wall-clock time of the most recent stop, used by [BootReceiver] to gate
-     * resume-on-reboot. Without this, a phone reboot at 10am (battery swap,
-     * OS update) would replay last night's bedtime mix during the day.
-     */
-    val lastStopAtMs: Long
-        get() = prefs?.getLong(KEY_LAST_STOP_AT_MS, 0L) ?: 0L
 
     private var prefs: SharedPreferences? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -68,9 +57,6 @@ object PlaybackController {
 
     private val _layerGains = MutableStateFlow<Map<SoundId, Float>>(emptyMap())
     val layerGains: StateFlow<Map<SoundId, Float>> = _layerGains.asStateFlow()
-
-    private val _resumeOnReboot = MutableStateFlow(false)
-    val resumeOnReboot: StateFlow<Boolean> = _resumeOnReboot.asStateFlow()
 
     /** Wall-clock millis when each previewing sound's free trial ends. */
     private val _previewExpiry = MutableStateFlow<Map<SoundId, Long>>(emptyMap())
@@ -98,7 +84,6 @@ object PlaybackController {
             ?.toSet() ?: emptySet()
         _activeSounds.value = saved
         _masterVolume.value = p.getFloat(KEY_MASTER_VOLUME, 1f)
-        _resumeOnReboot.value = p.getBoolean(KEY_RESUME_ON_REBOOT, false)
 
         val gains = mutableMapOf<SoundId, Float>()
         SoundId.entries.forEach { id ->
@@ -250,7 +235,6 @@ object PlaybackController {
     fun stopPlayback(context: Context) {
         _isPlaying.value = false
         _timerExpiryMs.value = null
-        prefs?.edit()?.putLong(KEY_LAST_STOP_AT_MS, System.currentTimeMillis())?.apply()
         val intent = Intent(context, SleepAudioService::class.java).apply {
             action = SleepAudioService.ACTION_STOP
         }
@@ -274,11 +258,6 @@ object PlaybackController {
         prefs?.edit()?.putFloat(KEY_MASTER_VOLUME, v)?.apply()
     }
 
-    fun setResumeOnReboot(enabled: Boolean) {
-        _resumeOnReboot.value = enabled
-        prefs?.edit()?.putBoolean(KEY_RESUME_ON_REBOOT, enabled)?.apply()
-    }
-
     /** Service tells us it stopped on its own (timer expired, focus lost). */
     fun notifyServiceStopped() {
         _isPlaying.value = false
@@ -286,7 +265,6 @@ object PlaybackController {
         _timerExpiryMs.value = null
         _previewExpiry.value = emptyMap()
         _previewFade.value = emptyMap()
-        prefs?.edit()?.putLong(KEY_LAST_STOP_AT_MS, System.currentTimeMillis())?.apply()
     }
 
     private fun persistActive(sounds: Set<SoundId>) {

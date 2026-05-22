@@ -46,7 +46,7 @@ be deleted?"*
 > **Answer: Not applicable / No data to delete.**
 >
 > Locally-stored preferences (selected sounds, per-sound volume,
-> resume-on-reboot toggle) can be cleared by the user at any time via
+> master volume) can be cleared by the user at any time via
 > Android Settings → Apps → Sleep Soundly → Storage → Clear storage. This is
 > a standard Android facility; we do not host any server-side data.
 
@@ -139,7 +139,6 @@ are:
 | `FOREGROUND_SERVICE_MEDIA_PLAYBACK` | Required on Android 14+ for media-playback FGS | Same — required by Android 14+ to declare the FGS as a media-playback one. |
 | `POST_NOTIFICATIONS` | Show the persistent media-control notification | The Android system requires apps to ask for notification permission to display the playback control. |
 | `WAKE_LOCK` | Prevent CPU sleep while audio is playing | So Doze does not silence the audio mid-night. |
-| `RECEIVE_BOOT_COMPLETED` | Used only if the user opts into "Resume on reboot" | Lets the app resume the last mix after a phone restart. Off by default. |
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Opens the system dialog so the user can grant the app battery-optimization exemption | The user chooses whether to grant it; the system shows the dialog. |
 
 None of these permissions cause data collection in the Google Play sense,

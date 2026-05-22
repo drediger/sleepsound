@@ -6,7 +6,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <!--
@@ -45,20 +44,6 @@
             android:name=".service.SleepAudioService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
-
-        <!--
-            exported="false": BOOT_COMPLETED is a protected system broadcast,
-            delivered to the receiver by the system directly. Exposing the
-            receiver to third-party apps offers no benefit and would let a
-            misbehaving app forge a boot to trigger auto-resume.
-        -->
-        <receiver
-            android:name=".BootReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
 
     </application>
 </manifest>

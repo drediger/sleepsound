@@ -83,7 +83,6 @@ WHAT YOU GET
 • A sleep timer with one-tap presets (15, 30, 60, 90 min) or a custom
   value up to 12 hours. Either way it fades audio out gently instead of
   cutting it off.
-• Optional resume-on-reboot for anyone who keeps the same mix nightly.
 
 BUILT FOR NIGHT-TIME
 • Pure-black UI throughout. The screen auto-dims after 30 seconds of
@@ -124,12 +123,11 @@ want those, other apps do them well.
 PERMISSIONS
 Sleep Soundly declares only the permissions it actually needs:
 foreground media-playback service, notifications (for the playback
-control), wake-lock to keep the CPU running during playback, an optional
-boot receiver if you opt in to resume-on-reboot, and the standard
-"request to ignore battery optimizations" permission so the Reliability
-screen can open Android's exemption dialog (you can always decline).
-Sleep Soundly does not request the network, microphone, location,
-contacts, or storage.
+control), wake-lock to keep the CPU running during playback, and the
+standard "request to ignore battery optimizations" permission so the
+Reliability screen can open Android's exemption dialog (you can always
+decline). Sleep Soundly does not request the network, microphone,
+location, contacts, or storage.
 
 PRIVACY
 Sleep Soundly collects no user data. No analytics, no advertising IDs, no
@@ -217,7 +215,7 @@ context-switch mid-submission:
 | Does this app contain ads? | No | None bundled. |
 | Does this app offer in-app purchases? | Yes — per-sound one-time $0.99 unlocks. | Decided 2026-05-19: free base app with 4 free sounds + 6 premium sounds at $0.99 each. |
 | Is this app primarily directed at children? | No | Sleep app for adults. |
-| Does it access sensitive permissions? | Yes: `FOREGROUND_SERVICE_MEDIA_PLAYBACK`, `POST_NOTIFICATIONS`, `WAKE_LOCK`, `RECEIVE_BOOT_COMPLETED`, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Declared in `AndroidManifest.xml`. |
+| Does it access sensitive permissions? | Yes: `FOREGROUND_SERVICE_MEDIA_PLAYBACK`, `POST_NOTIFICATIONS`, `WAKE_LOCK`, `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Declared in `AndroidManifest.xml`. |
 | Does it use Advertising ID? | No | Not requested, not used. |
 | Target API level | 35 (Android 15) | Per `build.gradle.kts`. |
 | Government app? | No | |

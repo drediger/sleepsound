@@ -39,6 +39,7 @@ import com.sleepsound.R
 import com.sleepsound.ui.theme.DimGrey
 import com.sleepsound.ui.theme.DimmerGrey
 import com.sleepsound.ui.theme.IconGrey
+import com.sleepsound.ui.theme.SoftWhite
 import com.sleepsound.ui.theme.SurfaceDark
 import kotlinx.coroutines.delay
 import java.util.Locale
@@ -75,7 +76,7 @@ fun TimerSelector(
                     modifier = Modifier.size(16.dp),
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(text = label, color = DimGrey, fontSize = 14.sp)
+                Text(text = label, color = SoftWhite, fontSize = 14.sp)
             }
         }
         DropdownMenu(
@@ -132,7 +133,7 @@ private fun CustomMinutesDialog(
         containerColor = SurfaceDark,
         titleContentColor = DimGrey,
         textContentColor = DimGrey,
-        title = { Text(stringResource(R.string.timer_custom_title), color = DimGrey) },
+        title = { Text(stringResource(R.string.timer_custom_title), color = SoftWhite) },
         text = {
             OutlinedTextField(
                 value = text,

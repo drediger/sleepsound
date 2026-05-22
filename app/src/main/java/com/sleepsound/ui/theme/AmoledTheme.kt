@@ -11,7 +11,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 val PureBlack = Color(0xFF000000)
-val DimGrey = Color(0xFF666666)
+// Inactive content / chrome. Bumped from #666 → #888 (May 2026) after
+// daytime testing showed #666 on PureBlack was readable at bedroom
+// brightness but not in normal use. #888 ≈ 6.4:1 on black.
+val DimGrey = Color(0xFF888888)
 val DimmerGrey = Color(0xFF333333)
 val SurfaceDark = Color(0xFF111111)
 val IconGrey = Color(0xFF888888)

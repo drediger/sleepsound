@@ -31,9 +31,8 @@ on-device validation, optional gradle-wrapper commit.
   controls, BT media keys, Android Auto all wired.
 - Partial wake lock acquired around the render loop (10 h safety
   timeout).
-- Optional `BootReceiver` resumes the last mix after reboot (opt-in).
 - In-app "Reliability" settings: battery-optimization exemption,
-  OEM-killer guidance via `dontkillmyapp.com`, resume-on-reboot.
+  OEM-killer guidance via `dontkillmyapp.com`.
 
 ### Added — UI (Compose + Material 3, AMOLED-true-black)
 - 3-column sound grid with haptic feedback + press-scale animation.

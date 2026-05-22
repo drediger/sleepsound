@@ -44,6 +44,7 @@ import com.sleepsound.audio.SoundId
 import com.sleepsound.ui.theme.DimGrey
 import com.sleepsound.ui.theme.DimmerGrey
 import com.sleepsound.ui.theme.IconGrey
+import com.sleepsound.ui.theme.SoftWhite
 
 /**
  * Per-active-sound volume sliders with a mute icon that remembers the last
@@ -99,7 +100,7 @@ private fun MixRow(
         Text(
             text = id.displayName,
             modifier = Modifier.width(88.dp),
-            color = DimGrey,
+            color = SoftWhite,
             fontSize = 12.sp,
         )
         Slider(

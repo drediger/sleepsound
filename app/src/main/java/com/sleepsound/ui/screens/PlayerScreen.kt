@@ -61,13 +61,13 @@ import com.sleepsound.audio.SoundTier
 import com.sleepsound.billing.BillingManager
 import com.sleepsound.billing.EntitlementStore
 import com.sleepsound.billing.PurchaseResult
-import com.sleepsound.ui.components.IdleDimmer
 import com.sleepsound.ui.components.MixPanel
 import com.sleepsound.ui.components.SettingsBottomSheet
 import com.sleepsound.ui.components.SoundTile
 import com.sleepsound.ui.components.TimerSelector
 import com.sleepsound.ui.theme.DimGrey
 import com.sleepsound.ui.theme.PureBlack
+import com.sleepsound.ui.theme.SoftWhite
 import com.sleepsound.ui.theme.SurfaceDark
 import kotlinx.coroutines.delay
 
@@ -80,7 +80,6 @@ fun PlayerScreen() {
     val timerMinutes by PlaybackController.timerMinutes.collectAsState()
     val timerExpiryMs by PlaybackController.timerExpiryMs.collectAsState()
     val layerGains by PlaybackController.layerGains.collectAsState()
-    val resumeOnReboot by PlaybackController.resumeOnReboot.collectAsState()
     val previewExpiry by PlaybackController.previewExpiry.collectAsState()
     val pendingPurchasePrompt by PlaybackController.pendingPurchasePrompt.collectAsState()
     val unlocked by EntitlementStore.unlocked.collectAsState()
@@ -123,150 +122,146 @@ fun PlayerScreen() {
         }
     }
 
-    IdleDimmer {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(PureBlack)
-                .windowInsetsPadding(WindowInsets.safeDrawing),
-        ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                val statusMsg = when {
-                    activeSounds.isEmpty() -> stringResource(R.string.player_tap_a_sound)
-                    isPlaying && activeSounds.size == 1 ->
-                        stringResource(R.string.player_playing_one)
-                    isPlaying -> stringResource(R.string.player_playing_n, activeSounds.size)
-                    else -> stringResource(R.string.player_tap_to_resume)
-                }
-                Box(
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(PureBlack)
+            .windowInsetsPadding(WindowInsets.safeDrawing),
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            val statusMsg = when {
+                activeSounds.isEmpty() -> stringResource(R.string.player_tap_a_sound)
+                isPlaying && activeSounds.size == 1 ->
+                    stringResource(R.string.player_playing_one)
+                isPlaying -> stringResource(R.string.player_playing_n, activeSounds.size)
+                else -> stringResource(R.string.player_tap_to_resume)
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp),
+            ) {
+                Text(
+                    text = statusMsg,
+                    color = SoftWhite,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Light,
+                    letterSpacing = 0.4.sp,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 4.dp),
+                        .align(Alignment.Center)
+                        .padding(vertical = 14.dp)
+                        // Polite liveRegion so TalkBack announces
+                        // "Playing 3 sounds" when the count changes,
+                        // without interrupting the current utterance.
+                        .semantics { liveRegion = LiveRegionMode.Polite },
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .clip(RoundedCornerShape(20.dp))
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                        ) { showSettings = true }
+                        .padding(12.dp),
                 ) {
-                    Text(
-                        text = statusMsg,
-                        color = DimGrey,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Light,
-                        letterSpacing = 0.4.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.Center)
-                            .padding(vertical = 14.dp)
-                            // Polite liveRegion so TalkBack announces
-                            // "Playing 3 sounds" when the count changes,
-                            // without interrupting the current utterance.
-                            .semantics { liveRegion = LiveRegionMode.Polite },
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = stringResource(R.string.cd_settings),
+                        tint = DimGrey,
+                        modifier = Modifier.size(20.dp),
                     )
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .clip(RoundedCornerShape(20.dp))
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                            ) { showSettings = true }
-                            .padding(12.dp),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = stringResource(R.string.cd_settings),
-                            tint = DimGrey,
-                            modifier = Modifier.size(20.dp),
+                }
+            }
+
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.Center,
+            ) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(3),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    val allIds = SoundId.entries
+                    // When the last row would have a single orphan tile,
+                    // bracket it with empty cells so it sits centered
+                    // instead of marooned in the left column.
+                    val centerLastRow = allIds.size % 3 == 1
+                    val mainCount = if (centerLastRow) allIds.size - 1 else allIds.size
+
+                    @Composable
+                    fun tile(id: SoundId) {
+                        val isLocked = id.tier == SoundTier.PREMIUM && id !in unlocked
+                        val expiry = previewExpiry[id]
+                        val previewRemaining = expiry?.let { (it - now).coerceAtLeast(0L) }
+                        SoundTile(
+                            id = id,
+                            active = id in activeSounds,
+                            locked = isLocked,
+                            previewMsRemaining = previewRemaining,
+                            showBuyPrompt = pendingPurchasePrompt == id,
+                            price = prices[id],
+                            onToggle = {
+                                PlaybackController.dismissPurchasePrompt()
+                                PlaybackController.toggleSound(context, id)
+                            },
+                            onBuy = {
+                                activity?.let { BillingManager.launchPurchaseFlow(it, id) }
+                                PlaybackController.dismissPurchasePrompt()
+                            },
                         )
                     }
-                }
 
-                Box(
-                    modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        val allIds = SoundId.entries
-                        // When the last row would have a single orphan tile,
-                        // bracket it with empty cells so it sits centered
-                        // instead of marooned in the left column.
-                        val centerLastRow = allIds.size % 3 == 1
-                        val mainCount = if (centerLastRow) allIds.size - 1 else allIds.size
-
-                        @Composable
-                        fun tile(id: SoundId) {
-                            val isLocked = id.tier == SoundTier.PREMIUM && id !in unlocked
-                            val expiry = previewExpiry[id]
-                            val previewRemaining = expiry?.let { (it - now).coerceAtLeast(0L) }
-                            SoundTile(
-                                id = id,
-                                active = id in activeSounds,
-                                locked = isLocked,
-                                previewMsRemaining = previewRemaining,
-                                showBuyPrompt = pendingPurchasePrompt == id,
-                                price = prices[id],
-                                onToggle = {
-                                    PlaybackController.dismissPurchasePrompt()
-                                    PlaybackController.toggleSound(context, id)
-                                },
-                                onBuy = {
-                                    activity?.let { BillingManager.launchPurchaseFlow(it, id) }
-                                    PlaybackController.dismissPurchasePrompt()
-                                },
-                            )
-                        }
-
-                        items(mainCount) { i -> tile(allIds[i]) }
-                        if (centerLastRow) {
-                            item { Box(Modifier.aspectRatio(1f)) }
-                            item { tile(allIds.last()) }
-                            item { Box(Modifier.aspectRatio(1f)) }
-                        }
+                    items(mainCount) { i -> tile(allIds[i]) }
+                    if (centerLastRow) {
+                        item { Box(Modifier.aspectRatio(1f)) }
+                        item { tile(allIds.last()) }
+                        item { Box(Modifier.aspectRatio(1f)) }
                     }
                 }
+            }
 
-                MixPanel(
-                    activeSounds = activeSounds,
-                    layerGains = layerGains,
-                    onGainChange = { id, gain -> PlaybackController.setLayerGain(id, gain) },
+            MixPanel(
+                activeSounds = activeSounds,
+                layerGains = layerGains,
+                onGainChange = { id, gain -> PlaybackController.setLayerGain(id, gain) },
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TimerSelector(
+                    minutes = timerMinutes,
+                    expiryMs = timerExpiryMs,
+                    onSelect = { PlaybackController.setTimer(it) },
                 )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    TimerSelector(
-                        minutes = timerMinutes,
-                        expiryMs = timerExpiryMs,
-                        onSelect = { PlaybackController.setTimer(it) },
-                    )
-                    if (isPlaying) {
-                        StopChip(onClick = { PlaybackController.stopPlayback(context) })
-                    }
+                if (isPlaying) {
+                    StopChip(onClick = { PlaybackController.stopPlayback(context) })
                 }
             }
+        }
 
-            SnackbarHost(
-                hostState = snackbarHost,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 96.dp),
-            ) { data ->
-                Snackbar(
-                    containerColor = SurfaceDark,
-                    contentColor = DimGrey,
-                ) { Text(data.visuals.message, color = DimGrey, fontSize = 14.sp) }
-            }
+        SnackbarHost(
+            hostState = snackbarHost,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 96.dp),
+        ) { data ->
+            Snackbar(
+                containerColor = SurfaceDark,
+                contentColor = SoftWhite,
+            ) { Text(data.visuals.message, color = SoftWhite, fontSize = 14.sp) }
         }
     }
 
     if (showSettings) {
         SettingsBottomSheet(
-            resumeOnReboot = resumeOnReboot,
-            onResumeOnRebootChange = PlaybackController::setResumeOnReboot,
             onDismiss = { showSettings = false },
         )
     }

@@ -53,8 +53,7 @@
     <string name="settings_section_purchases">Purchases</string>
     <string name="settings_battery_title">Allow background playback</string>
     <string name="settings_battery_subtitle">Prevents Android from killing audio overnight</string>
-    <string name="settings_resume_title">Resume on reboot</string>
-    <string name="settings_resume_subtitle">Auto-start last mix when your phone restarts</string>
+    <string name="settings_battery_granted_subtitle">Allowed — Android won\'t kill audio overnight</string>
     <string name="settings_bundle_title">Unlock all sounds</string>
     <string name="settings_bundle_subtitle_format">%1$s — every premium sound in one purchase</string>
     <string name="settings_bundle_loading">Bundle price loading…</string>

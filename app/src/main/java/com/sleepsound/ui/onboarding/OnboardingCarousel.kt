@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -37,8 +38,10 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -51,6 +54,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.sleepsound.R
 import com.sleepsound.ui.theme.DimGrey
 import com.sleepsound.ui.theme.DimmerGrey
@@ -185,7 +190,7 @@ private fun FulfilledPill(text: String) {
                 modifier = Modifier.size(18.dp),
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = text, color = DimGrey, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            Text(text = text, color = SoftWhite, fontSize = 14.sp, fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -204,7 +209,7 @@ private fun PrimaryButton(text: String, onClick: () -> Unit) {
             )
             .padding(horizontal = 24.dp, vertical = 12.dp),
     ) {
-        Text(text = text, color = DimGrey, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+        Text(text = text, color = SoftWhite, fontSize = 14.sp, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -259,8 +264,21 @@ private data class OnboardingPage(
 @Composable
 private fun onboardingPages(): List<OnboardingPage> {
     val context = LocalContext.current
-    val alreadyExempt = (context.getSystemService(Context.POWER_SERVICE) as? PowerManager)
-        ?.isIgnoringBatteryOptimizations(context.packageName) == true
+    // The exemption can be granted in the system dialog launched from this
+    // screen, so re-check on every ON_RESUME — otherwise the pill is stuck on
+    // its first-composition value and never flips to "Already granted."
+    var alreadyExempt by remember { mutableStateOf(isIgnoringBatteryOptimizations(context)) }
+    val activity = context as? ComponentActivity
+    DisposableEffect(activity) {
+        if (activity == null) return@DisposableEffect onDispose {}
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                alreadyExempt = isIgnoringBatteryOptimizations(context)
+            }
+        }
+        activity.lifecycle.addObserver(observer)
+        onDispose { activity.lifecycle.removeObserver(observer) }
+    }
 
     return listOf(
         OnboardingPage(
@@ -283,10 +301,13 @@ private fun onboardingPages(): List<OnboardingPage> {
     )
 }
 
+private fun isIgnoringBatteryOptimizations(context: Context): Boolean =
+    (context.getSystemService(Context.POWER_SERVICE) as? PowerManager)
+        ?.isIgnoringBatteryOptimizations(context.packageName) == true
+
 @SuppressLint("BatteryLife")
 private fun requestIgnoreBatteryOptimizations(context: Context) {
-    val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
-    if (pm.isIgnoringBatteryOptimizations(context.packageName)) return
+    if (isIgnoringBatteryOptimizations(context)) return
     runCatching {
         val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
             data = Uri.parse("package:${context.packageName}")

@@ -52,7 +52,6 @@ never leaves your device:
 - The set of sounds you've selected and your per-sound volume settings,
   so the app remembers your last mix between launches.
 - Your master volume.
-- Whether you've opted into "resume on reboot."
 
 You can delete all of this at any time by clearing the app's storage
 (Android Settings → Apps → Sleep Soundly → Storage → Clear storage) or by

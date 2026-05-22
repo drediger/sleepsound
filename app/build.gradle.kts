@@ -33,7 +33,7 @@ android {
         applicationId = "io.github.drediger.sleepsoundly"
         minSdk = 29
         targetSdk = 35
-        versionCode = 2
+        versionCode = 3
         versionName = "1.0.0-rc1"
 
         vectorDrawables {

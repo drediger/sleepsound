@@ -57,6 +57,7 @@ import com.sleepsound.ui.theme.DimGrey
 import com.sleepsound.ui.theme.DimmerGrey
 import com.sleepsound.ui.theme.IconGrey
 import com.sleepsound.ui.theme.PureBlack
+import com.sleepsound.ui.theme.SoftWhite
 import com.sleepsound.ui.theme.SurfaceDark
 
 /**
@@ -102,8 +103,8 @@ fun SoundTile(
         targetValue = if (pressed) 0.94f else 1f,
         label = "tilePress",
     )
-    val contentColor = if (active) IconGrey else DimGrey
-    val textColor = if (active) IconGrey else DimGrey
+    val contentColor = if (active) SoftWhite else DimGrey
+    val textColor = if (active) SoftWhite else DimGrey
 
     // TalkBack: collapse the tile's children into one announcement
     // "<sound>, button, <state>" rather than reading the icon + label + badge

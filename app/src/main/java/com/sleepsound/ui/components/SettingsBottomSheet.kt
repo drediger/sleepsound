@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,16 +16,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,7 +39,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import android.app.Activity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.sleepsound.BuildConfig
 import com.sleepsound.R
 import com.sleepsound.audio.SoundId
@@ -49,22 +51,34 @@ import com.sleepsound.ui.theme.DimGrey
 import com.sleepsound.ui.theme.DimmerGrey
 import com.sleepsound.ui.theme.IconGrey
 import com.sleepsound.ui.theme.PureBlack
+import com.sleepsound.ui.theme.SoftWhite
 import com.sleepsound.ui.theme.SurfaceDark
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsBottomSheet(
-    resumeOnReboot: Boolean,
-    onResumeOnRebootChange: (Boolean) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
-    val activity = context as? Activity
+    val activity = context as? ComponentActivity
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val privacyUrl = stringResource(R.string.privacy_policy_url)
     val coroutineScope = rememberCoroutineScope()
     var restoreStatus by remember { mutableStateOf<String?>(null) }
+    // Re-check on every ON_RESUME so the row flips to "Allowed" when the
+    // user returns from the system battery-optimization dialog.
+    var batteryExempt by remember { mutableStateOf(isIgnoringBatteryOptimizations(context)) }
+    DisposableEffect(activity) {
+        if (activity == null) return@DisposableEffect onDispose {}
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                batteryExempt = isIgnoringBatteryOptimizations(context)
+            }
+        }
+        activity.lifecycle.addObserver(observer)
+        onDispose { activity.lifecycle.removeObserver(observer) }
+    }
     val bundlePrice by BillingManager.bundlePrice.collectAsState()
     val unlocked by EntitlementStore.unlocked.collectAsState()
     val allPremiumUnlocked = SoundId.entries
@@ -89,14 +103,12 @@ fun SettingsBottomSheet(
             SectionHeader(text = stringResource(R.string.settings_section_reliability))
             SettingRow(
                 title = stringResource(R.string.settings_battery_title),
-                subtitle = stringResource(R.string.settings_battery_subtitle),
+                subtitle = if (batteryExempt)
+                    stringResource(R.string.settings_battery_granted_subtitle)
+                else
+                    stringResource(R.string.settings_battery_subtitle),
                 onClick = { requestIgnoreBatteryOptimizations(context) },
-            )
-            SettingToggle(
-                title = stringResource(R.string.settings_resume_title),
-                subtitle = stringResource(R.string.settings_resume_subtitle),
-                checked = resumeOnReboot,
-                onChange = onResumeOnRebootChange,
+                done = batteryExempt,
             )
 
             SectionDivider()
@@ -153,7 +165,7 @@ fun SettingsBottomSheet(
 private fun SectionHeader(text: String) {
     Text(
         text = text,
-        color = DimGrey,
+        color = SoftWhite,
         fontSize = 13.sp,
         fontWeight = FontWeight.Medium,
         modifier = Modifier.padding(top = 12.dp, bottom = 8.dp),
@@ -190,62 +202,38 @@ private fun VersionLine(text: String) {
 }
 
 @Composable
-private fun SettingRow(title: String, subtitle: String, onClick: () -> Unit) {
+private fun SettingRow(
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+    done: Boolean = false,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .then(if (done) Modifier else Modifier.clickable(onClick = onClick))
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, color = DimGrey, fontSize = 14.sp)
+            Text(title, color = SoftWhite, fontSize = 14.sp)
             Text(subtitle, color = DimGrey, fontSize = 11.sp, maxLines = 1)
         }
         Icon(
-            imageVector = Icons.Default.ChevronRight,
+            imageVector = if (done) Icons.Default.Check else Icons.Default.ChevronRight,
             contentDescription = null,
             tint = DimGrey,
         )
     }
 }
 
-@Composable
-private fun SettingToggle(
-    title: String,
-    subtitle: String,
-    checked: Boolean,
-    onChange: (Boolean) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(title, color = DimGrey, fontSize = 14.sp)
-            Text(subtitle, color = DimGrey, fontSize = 11.sp)
-        }
-        Switch(
-            checked = checked,
-            onCheckedChange = onChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = IconGrey,
-                checkedTrackColor = SurfaceDark,
-                checkedBorderColor = IconGrey,
-                uncheckedThumbColor = DimmerGrey,
-                uncheckedTrackColor = PureBlack,
-                uncheckedBorderColor = DimmerGrey,
-            ),
-        )
-    }
-}
+private fun isIgnoringBatteryOptimizations(context: Context): Boolean =
+    (context.getSystemService(Context.POWER_SERVICE) as? PowerManager)
+        ?.isIgnoringBatteryOptimizations(context.packageName) == true
 
 @SuppressLint("BatteryLife")
 private fun requestIgnoreBatteryOptimizations(context: Context) {
-    val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
-    if (pm.isIgnoringBatteryOptimizations(context.packageName)) return
+    if (isIgnoringBatteryOptimizations(context)) return
     runCatching {
         val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
             data = Uri.parse("package:${context.packageName}")
