@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +54,7 @@ import com.sleepsound.ui.theme.IconGrey
 import com.sleepsound.ui.theme.PureBlack
 import com.sleepsound.ui.theme.SoftWhite
 import com.sleepsound.ui.theme.SurfaceDark
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,6 +82,18 @@ fun SettingsBottomSheet(
         onDispose { activity.lifecycle.removeObserver(observer) }
     }
     val bundlePrice by BillingManager.bundlePrice.collectAsState()
+    // If BillingClient never returns a price (no Play Services, network
+    // dead, products not yet registered), don't leave the row stuck on
+    // "Bundle price loading…" forever — give it a 5 s grace then hide.
+    var bundleTimedOut by remember { mutableStateOf(false) }
+    LaunchedEffect(bundlePrice) {
+        if (bundlePrice == null) {
+            delay(5_000)
+            bundleTimedOut = true
+        } else {
+            bundleTimedOut = false
+        }
+    }
     val unlocked by EntitlementStore.unlocked.collectAsState()
     val allPremiumUnlocked = SoundId.entries
         .filter { it.tier == SoundTier.PREMIUM }
@@ -114,7 +128,7 @@ fun SettingsBottomSheet(
             SectionDivider()
 
             SectionHeader(text = stringResource(R.string.settings_section_purchases))
-            if (!allPremiumUnlocked) {
+            if (!allPremiumUnlocked && (bundlePrice != null || !bundleTimedOut)) {
                 SettingRow(
                     title = stringResource(R.string.settings_bundle_title),
                     subtitle = bundlePrice?.let { bundleSubtitleFmt.format(it) }

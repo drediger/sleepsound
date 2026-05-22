@@ -3,6 +3,91 @@
 All notable changes to Sleep Soundly are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/). Dates are YYYY-MM-DD.
 
+## [1.0.0-rc2] — 2026-05-22
+
+Second release candidate. On-device review polish + billing UX fixes +
+full Play Console IAP wiring validated end-to-end.
+
+### Removed
+- `IdleDimmer`. Interacted badly with the modal Settings sheet (taps on
+  the sheet didn't reset the dimmer's idle timer, so the page faded
+  to black with no way to recover) and the OS screen-timeout already
+  handled its intended purpose.
+- Resume-on-reboot opt-in (`BootReceiver`, manifest entry, settings
+  toggle, `RECEIVE_BOOT_COMPLETED` permission). The 8-hour guard was
+  the actual safety mechanism; the toggle just confused users.
+  Last-mix persistence stays — selected sounds, layer gains, master
+  volume restore on next launch.
+- Obsolete `-keep class com.sleepsound.BootReceiver` proguard rule
+  referencing the deleted class. R8 was silently warning every
+  release build.
+
+### Changed — visual identity
+- New "moonlit-night" palette harmonized with the slate-and-cream
+  launcher icon. PureBlack stays as the background (four-pillar AMOLED
+  promise); surfaces and content shifted to cool slate-blue. Token
+  values: `SurfaceDark #1A2236`, `DimGrey #A8B0C0`, `SoftWhite
+  #E0E4EC`. Two-tier text scheme — primary text (titles, status, sound
+  names, active tile labels, button labels) uses `SoftWhite`,
+  secondary text (subtitles, captions, inactive tile labels, dropdown
+  items) uses `DimGrey`.
+- Every sound tile now gets a `SurfaceDark` card background. Inactive
+  tiles previously had transparent `PureBlack` bg and read as floating
+  glyphs.
+- Active tile border bumped to `SoftWhite` (was `IconGrey`, same value
+  as inactive text — couldn't distinguish active from inactive at a
+  glance).
+- Lock badges, timer dropdown items, stop button, and settings gear
+  promoted to `SoftWhite` — readable as primary controls.
+
+### Changed — UX fixes from on-device review
+- Settings → "Allow background playback" row shows a checkmark and
+  "Allowed — Android won't kill audio overnight" subtitle once
+  granted, with an `ON_RESUME` lifecycle observer so it reflects state
+  when the user returns from the system dialog. Same pattern applied
+  to the onboarding battery-exemption pill, which previously never
+  flipped to its fulfilled state.
+
+### Changed — billing
+- Bundle purchase fires a dedicated `PurchaseResult.BundleSuccess` so
+  the snackbar reads "All sounds unlocked" instead of an arbitrary
+  single-sound name picked from the bundle's expanded `SoundId` set
+  (set iteration order isn't deterministic).
+- `launchPurchaseFlowForProduct` emits `PurchaseResult.Failure` when
+  the billing client isn't ready or product details weren't cached.
+  User sees the existing "Purchase failed" snackbar instead of a
+  silent no-op tap.
+- `EntitlementStore.unlockMany` batches a bundle purchase into one
+  `SharedPreferences` write (was six separate writes).
+- Settings bundle row hides itself if `BillingClient` hasn't returned
+  the price after 5 s — instead of "Bundle price loading…" stuck
+  forever on devices without Google Play Services.
+- Validated end-to-end on a Galaxy S25 via license-tester card:
+  bundle purchase ✓, all 6 entitlements unlocked ✓, auto-restore via
+  `queryExistingPurchases` on cold launch after `pm clear` ✓, manual
+  Restore shows "Nothing to restore" when already unlocked ✓.
+
+### Changed — IAP product registration (Play Console)
+- Seven one-time products registered and Active: `sound_pink_noise`,
+  `sound_violet_noise`, `sound_thunderstorm`, `sound_dryer`,
+  `sound_fan`, `sound_fireplace` at $0.99 each; `bundle_all_sounds`
+  at $3.99. All non-consumable, "Digital app sales" tax category,
+  173 countries / regions, "All ages" rating.
+- IAP product icon archived at `store/iap-icon.png` (512×512 32-bit
+  PNG generated from the moon artwork via ImageMagick).
+
+### Changed — store assets
+- Refreshed Play Store device screenshots in `store/device-screenshots/`
+  with the moonlit palette.
+- Reconciled `STORE_LISTING.md`, `DATA_SAFETY.md`, `PRIVACY.md`,
+  `QA_MATRIX.md`, `PLAN.md`, `README.md`, `CLAUDE.md` with the
+  dropped resume-on-reboot feature.
+
+### Fixed
+- `SoundTier.kt` math comment was "7 x $0.99 = $6.93"; there are 6
+  premium sounds, so the bundle's discount math is "6 x $0.99 = $5.94"
+  (vs $3.99 bundle = ~33% savings).
+
 ## [1.0.0-rc1] — 2026-05-19
 
 First release candidate. Feature-complete for the Play Store launch
@@ -88,24 +173,3 @@ on-device validation, optional gradle-wrapper commit.
 - No Crashlytics integration — first user crash will be the only
   signal until that's added.
 
-### Resolved post-rc1 (in main, awaiting next tag)
-- Renamed app to **Sleep Soundly** (display name + onboarding copy);
-  package id unchanged.
-- New moon launcher icon at all five densities, adaptive-icon
-  background set to the artwork's navy.
-- Dropped TV static (audibly indistinguishable from white noise);
-  catalog now 4 free + 6 premium = 10 sounds.
-- Six CC0 sample recordings now bundled — fan + dryer joined the
-  existing rain / ocean / thunderstorm / fireplace.
-- Privacy policy hosted at
-  <https://drediger.github.io/sleepsound/privacy/> via GitHub Pages
-  from `main:/docs`. `strings.xml#privacy_policy_url` points at it.
-- Notification clears instantly on stop instead of after the engine's
-  1.5 s fade. `AudioEngine.stop` watchdog now respects a subsequent
-  `start()` and bows out instead of cancelling the render job
-  mid-new-playback.
-- `IdleDimmer` wakes the screen synchronously on tap (was a 3–5 s
-  delay while the polling loop's next tick arrived).
-- Settings sheet dropped the OEM/Samsung row.
-- Player grid centers vertically; last-row orphan tile sits centered
-  too.
